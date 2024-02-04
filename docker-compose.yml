@@ -1,0 +1,235 @@
+version: "3.9"
+volumes:
+    # Путь к БД redis
+    redis:
+    # Nodejs
+    nodejs:
+
+services:
+    nginx:
+        image: nginx:alpine
+        container_name: nginx
+        volumes:
+            - ${CONF_NGINX}:/etc/nginx/nginx.conf
+            - ${CONF_HOSTS}:/etc/nginx/conf.d:ro
+            - ${DATA_WWW}:/var/www:ro
+        command: [ nginx, '-g', 'daemon off;' ]
+        ports:
+            - "80:80"
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:5514"
+                syslog-facility: "daemon"
+                tag: "nginx"
+
+    fpm:
+        build:
+            context: .
+            dockerfile: ./images/php-fpm/Dockerfile
+            args:
+                # build context only
+                php_version: ${PHP_VERSION:-8.2}
+                allow_xdebug: ${ALLOW_XDEBUG:-1}
+        container_name: php-fpm
+        environment:
+            # service container environment
+            - PHP_VERSION=${PHP_VERSION:-8.2}
+            - XDEBUG_PORT=${XDEBUG_PORT:-9001}
+        volumes:
+            - ${DATA_WWW}:/var/www
+            - ${DATA_XDEBUG}:/tmp/xdebug
+        ports:
+            - "9000:9000"
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:5514"
+                syslog-facility: "daemon"
+                tag: "{{.ImageName}}"
+
+    crontab:
+        build:
+            context: .
+            dockerfile: ./images/php-cron/Dockerfile
+            args:
+                - php_version=${PHP_VERSION:-8.2}
+                - allow_xdebug=${ALLOW_XDEBUG:-1}
+                - cron_config_dir=${CONF_CRON}
+        container_name: php-cron
+        environment:
+            PHP_VERSION: ${PHP_VERSION:-8.2}
+            XDEBUG_PORT: ${XDEBUG_PORT:-9001}
+        volumes:
+            - ${DATA_WWW}:/var/www
+            - ${DATA_XDEBUG}:/tmp/xdebug
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:5514"
+                syslog-facility: "daemon"
+                tag: "{{.ImageName}}"
+
+    workers:
+        build:
+            context: .
+            dockerfile: ./images/php-worker/Dockerfile
+            args:
+                - php_version=${PHP_VERSION:-8.2}
+                - user=${UID:-1}
+        container_name: php-worker
+        environment:
+            PHP_VERSION: ${PHP_VERSION:-8.2}
+            XDEBUG_PORT: ${XDEBUG_PORT:-9001}
+            USER: ${UID:-0}
+        volumes:
+            - ${DATA_WWW}:/var/www
+            - /etc/passwd:/etc/passwd
+            - /etc/group:/etc/group
+            - ${CONF_WORKER}:/etc/supervisor/conf.d/
+        command: [ "/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf" ]
+        #command: [ "/usr/bin/supervisord" ]
+        depends_on:
+            db:
+                condition: service_healthy
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:5514"
+                syslog-facility: "daemon"
+                tag: "{{.ImageName}}"
+
+    db:
+        image: percona:ps-8
+        container_name: db
+        #user: ${UID:-1000}:${GID:-1000}
+        volumes:
+            - ${DATA_MYSQL}:/var/lib/mysql
+            - ${CONF_MYSQL}:/etc/my.cnf.d:ro
+        ports:
+            - "3306:3306"
+        links:
+            - "logger"
+        networks:
+            net:
+                ipv4_address: 192.168.17.33
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        #command: [ chmod, '0777', /var/lib/mysql ]
+        healthcheck:
+            test: [ "CMD", "mysqladmin", "-uroot", "-p$MYSQL_ROOT_PASSWORD",  "ping", "-h", "localhost" ]
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:5514"
+                syslog-facility: "daemon"
+                tag: "{{.ImageName}}"
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: phpmyadmin
+        links:
+            - db:db
+        ports:
+            - "8081:80"
+        networks:
+            - net
+        environment:
+            MYSQL_USERNAME: root
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            UPLOAD_LIMIT: ${UPLOAD_LIMIT}
+        restart: unless-stopped
+
+    memcached:
+        image: memcached
+        container_name: memcached
+        ports:
+            - "11211:11211"
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:5514"
+                syslog-facility: "daemon"
+                tag: "{{.ImageName}}"
+
+    redis:
+        image: redis
+        container_name: redis
+        volumes:
+            - ${DATA_REDIS}:/tmp/redis
+            - ${CONF_REDIS}:/usr/local/etc/redis/redis.conf
+        command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+        ports:
+            - "6379:6379"
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:5514"
+                syslog-facility: "daemon"
+                tag: "{{.ImageName}}"
+
+    nodejs:
+        build:
+            context: ./images/nodejs
+        container_name: nodejs
+        ports:
+            - "8085:8085"
+            - "8086:8086"
+            - "1333:1333"
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:5514"
+                syslog-facility: "daemon"
+                tag: "{{.ImageName}}"
+
+    logger:
+        image: lscr.io/linuxserver/syslog-ng:latest
+        container_name: logger
+        environment:
+            - PUID=${UID:-1000}
+            - PGID=${GID:-1000}
+            - TZ=${DEFAULT_TIME_ZONE}
+        volumes:
+            - ${CONF_LOG}:/config/syslog-ng.conf
+            - ${DATA_LOG}:/var/log #optional
+        ports:
+            - "127.0.0.1:5514:5514/udp"
+            - "127.0.0.1:6601:6601/tcp"
+            - 514:5514/udp
+            - 601:6601/tcp
+            - 6514:6514/tcp
+        networks:
+            - net
+        restart: unless-stopped
+
+networks:
+    net:
+        #name: dockerNet
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                -   subnet: 192.168.17.1/24

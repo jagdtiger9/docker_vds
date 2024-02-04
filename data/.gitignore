@@ -1,0 +1,5 @@
+# Exclude list: files that you don’t want Git to automatically add or even show you as being untracked
+# http://git-scm.com/book/en/Git-Basics-Recording-Changes-to-the-Repository (section "Ignoring Files")
+
+/*
+!.gitignore
