@@ -35,6 +35,7 @@ services:
                 php_version: ${PHP_VERSION:-8.2}
                 allow_xdebug: ${ALLOW_XDEBUG:-1}
         container_name: php-fpm
+
         environment:
             # service container environment
             - PHP_VERSION=${PHP_VERSION:-8.2}
@@ -171,6 +172,7 @@ services:
     redis:
         image: redis
         container_name: redis
+        user: ${UID:-1000}:${GID:-1000}
         volumes:
             - ${DATA_REDIS}:/tmp/redis
             - ${CONF_REDIS}:/usr/local/etc/redis/redis.conf

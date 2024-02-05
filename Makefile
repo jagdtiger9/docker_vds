@@ -36,5 +36,11 @@ tests:
 
 clickhouse:
 	docker exec -ti clickhouse clickhouse-client
+
+fpm:
+	docker exec -ti php-fpm bash
+
+project:
+	docker compose exec --user user fpm /bin/bash -c 'cd /var/www/magicpro; bash ./webInstaller.sh'
 # examples:
 #  $ docker-composer build --no-cache db
