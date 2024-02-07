@@ -12,7 +12,7 @@ services:
         volumes:
             - ${CONF_NGINX}:/etc/nginx/nginx.conf
             - ${CONF_HOSTS}:/etc/nginx/conf.d:ro
-            - ${CONF_CERTBOT}:/var/www/certbot/:ro
+            - ${DATA_CERTBOT}:/var/www/certbot/:ro
             - ${DATA_WWW}:/var/www:ro
         command: [ nginx, '-g', 'daemon off;' ]
         ports:
@@ -242,4 +242,4 @@ networks:
         ipam:
             driver: default
             config:
-                -   subnet: 192.168.17.1/24
+                -   subnet: 192.168.17.0/24
