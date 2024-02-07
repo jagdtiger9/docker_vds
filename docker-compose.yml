@@ -12,7 +12,7 @@ services:
         volumes:
             - ${CONF_NGINX}:/etc/nginx/nginx.conf
             - ${CONF_HOSTS}:/etc/nginx/conf.d:ro
-            - ${DATA_CERTBOT}:/var/www/certbot/:ro
+            - ${DATA_CERTBOT}:/var/certbot/:ro
             - ${DATA_WWW}:/var/www:ro
         command: [ nginx, '-g', 'daemon off;' ]
         ports:
@@ -30,8 +30,9 @@ services:
 
     certbot:
         image: certbot/certbot:latest
+        container_name: certbot
         volumes:
-            - ${DATA_CERTBOT}:/var/www/certbot/:rw
+            - ${DATA_CERTBOT}:/var/certbot/:rw
             - ${CONF_CERTBOT}:/etc/letsencrypt/:rw
 
     fpm:

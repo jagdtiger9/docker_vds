@@ -51,7 +51,7 @@ nginx.reload:
 	docker compose exec nginx nginx -s reload
 
 certbot.create:
-	docker compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
+	docker compose run --rm certbot certonly --webroot --webroot-path /var/certbot/ -d ${DOMAIN}
 
 certbot.renew:
-	docker compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
+	docker compose run --rm certbot certonly --webroot --webroot-path /var/certbot/ -d ${DOMAIN}
