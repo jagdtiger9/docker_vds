@@ -37,10 +37,21 @@ tests:
 clickhouse:
 	docker exec -ti clickhouse clickhouse-client
 
+# https://stackoverflow.com/questions/58852571/catch-all-helper-for-makefile-when-the-possible-arguments-can-include-a-colon-ch
 fpm:
-	docker exec -ti php-fpm bash
+	docker compose exec fpm /bin/bash -c '$(CMD)'
 
-project:
-	docker compose exec --user user fpm /bin/bash -c 'cd /var/www/magicpro; bash ./webInstaller.sh'
-# examples:
-#  $ docker-composer build --no-cache db
+project.init:
+	docker compose exec fpm /bin/bash -c 'useradd --shell /bin/bash --uid ${UID} --gid ${UID} -m u${UID}'
+
+project.user:
+	docker compose exec --user ${UID} fpm /bin/bash -c 'cd /var/www/${PROJECT}; $(CMD)'
+
+nginx.reload:
+	docker compose exec nginx nginx -s reload
+
+certbot.create:
+	docker compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
+
+certbot.renew:
+	docker compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
