@@ -34,18 +34,15 @@ ps:
 tests:
 	${COMPOSE_BIN} -f docker-compose.yml run tests
 
-clickhouse:
-	docker exec -ti clickhouse clickhouse-client
-
-# https://stackoverflow.com/questions/58852571/catch-all-helper-for-makefile-when-the-possible-arguments-can-include-a-colon-ch
-fpm:
-	docker compose exec fpm /bin/bash -c '$(CMD)'
-
 project.init:
 	docker compose exec fpm /bin/bash -c 'groupadd --gid ${GID} gr${GID}; useradd --shell /bin/bash --uid ${UID} --gid ${GID} -m u${UID}'
 
 project.user:
 	docker compose exec --user ${UID}:${GID} fpm /bin/bash -c 'cd /var/www/${PROJECT}; $(CMD)'
+
+# https://stackoverflow.com/questions/58852571/catch-all-helper-for-makefile-when-the-possible-arguments-can-include-a-colon-ch
+fpm:
+	docker compose exec fpm /bin/bash -c '$(CMD)'
 
 nginx.reload:
 	docker compose exec nginx nginx -s reload

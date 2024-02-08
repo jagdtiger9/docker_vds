@@ -13,8 +13,8 @@ services:
             - ${CONF_NGINX}:/etc/nginx/nginx.conf
             - ${CONF_HOSTS}:/etc/nginx/conf.d:ro
             - ${DATA_HOSTS}:/var/www
-            - ${DATA_CERTBOT}:/var/www/certbot/:ro
-            - ${CONF_CERTBOT}:/etc/nginx/ssl/:ro
+            - ${CERTBOT_WEB}:/var/www/certbot/:ro
+            - ${CERTBOT_SSL}:/etc/nginx/ssl/:ro
         command: [ nginx, '-g', 'daemon off;' ]
         ports:
             - "80:80"
@@ -35,8 +35,8 @@ services:
         container_name: certbot
         #user: ${UID:-1000}:${GID:-1000}
         volumes:
-            - ${DATA_CERTBOT}:/var/www/certbot/:rw
-            - ${CONF_CERTBOT}:/etc/letsencrypt/:rw
+            - ${CERTBOT_WEB}:/var/www/certbot/:rw
+            - ${CERTBOT_SSL}:/etc/letsencrypt/:rw
         logging:
             driver: "syslog"
             options:
