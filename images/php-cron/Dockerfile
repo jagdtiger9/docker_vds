@@ -12,6 +12,7 @@ ARG cron_config_dir
 ##ADD ./.conf/init_user_cron.sh /etc/my_init.d/init_user_cron.sh
 
 # Add cron tasks
-ADD $cron_config_dir /etc/cron.d/
+# use ../../ since ENV variables set relative to root dir where docker-compose.yml is located
+ADD ../../$cron_config_dir /etc/cron.d/
 
 RUN if [ "$allow_xdebug" = "0" ]; then phpdismod xdebug; fi
