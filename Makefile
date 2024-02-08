@@ -42,10 +42,10 @@ fpm:
 	docker compose exec fpm /bin/bash -c '$(CMD)'
 
 project.init:
-	docker compose exec fpm /bin/bash -c 'useradd --shell /bin/bash --uid ${UID} --gid ${UID} -m u${UID}'
+	docker compose exec fpm /bin/bash -c 'groupadd --gid ${GID} gr${GID}; useradd --shell /bin/bash --uid ${UID} --gid ${GID} -m u${UID}'
 
 project.user:
-	docker compose exec --user ${UID} fpm /bin/bash -c 'cd /var/www/${PROJECT}; $(CMD)'
+	docker compose exec --user ${UID}:${GID} fpm /bin/bash -c 'cd /var/www/${PROJECT}; $(CMD)'
 
 nginx.reload:
 	docker compose exec nginx nginx -s reload
