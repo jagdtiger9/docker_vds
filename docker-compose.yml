@@ -87,6 +87,7 @@ services:
         volumes:
             - ${DATA_HOSTS}:/var/www
             - ${DATA_XDEBUG}:/tmp/xdebug
+            - ${CONF_CRON}:/etc/cron.d/hosts_crontab
         networks:
             - net
         restart: unless-stopped
