@@ -13,7 +13,7 @@ services:
             - ${CONF_NGINX}:/etc/nginx/nginx.conf
             - ${CONF_HOSTS}:/etc/nginx/conf.d:ro
             - ${DATA_CERTBOT}:/var/www/certbot/:ro
-            - ${DATA_WWW}:/var/www
+            - ${DATA_HOSTS}:/var/www
         command: [ nginx, '-g', 'daemon off;' ]
         ports:
             - "80:80"
@@ -31,6 +31,7 @@ services:
     certbot:
         image: certbot/certbot:latest
         container_name: certbot
+        user: ${UID:-1000}:${GID:-1000}
         volumes:
             - ${DATA_CERTBOT}:/var/www/certbot/:rw
             - ${CONF_CERTBOT}:/etc/letsencrypt/:rw
@@ -56,7 +57,7 @@ services:
             - PHP_VERSION=${PHP_VERSION:-8.2}
             - XDEBUG_PORT=${XDEBUG_PORT:-9001}
         volumes:
-            - ${DATA_WWW}:/var/www
+            - ${DATA_HOSTS}:/var/www
             - ${DATA_XDEBUG}:/tmp/xdebug
         ports:
             - "9000:9000"
@@ -83,7 +84,7 @@ services:
             PHP_VERSION: ${PHP_VERSION:-8.2}
             XDEBUG_PORT: ${XDEBUG_PORT:-9001}
         volumes:
-            - ${DATA_WWW}:/var/www
+            - ${DATA_HOSTS}:/var/www
             - ${DATA_XDEBUG}:/tmp/xdebug
         networks:
             - net
@@ -108,7 +109,7 @@ services:
             XDEBUG_PORT: ${XDEBUG_PORT:-9001}
             USER: ${UID:-0}
         volumes:
-            - ${DATA_WWW}:/var/www
+            - ${DATA_HOSTS}:/var/www
             - /etc/passwd:/etc/passwd
             - /etc/group:/etc/group
             - ${CONF_WORKER}:/etc/supervisor/conf.d/
