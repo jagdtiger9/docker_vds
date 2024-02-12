@@ -5,9 +5,9 @@ MAINTAINER gimatov@gmail.com
 #ARG user
 
 RUN apt-get -y update \
-    && apt-get install -y software-properties-common
-RUN apt-get install -y supervisor
-RUN apt-get clean \
+    && apt-get install -y software-properties-common \
+    && apt-get install -y supervisor \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 #CMD ["/usr/bin/supervisord", '-u', user]

@@ -80,7 +80,6 @@ services:
             args:
                 - php_version=${PHP_VERSION:-8.2}
                 - allow_xdebug=${ALLOW_XDEBUG:-1}
-                - cron_config_dir=${CONF_CRON}
         container_name: php-cron
         environment:
             PHP_VERSION: ${PHP_VERSION:-8.2}
@@ -206,6 +205,28 @@ services:
                 syslog-address: "udp://127.0.0.1:5514"
                 syslog-facility: "daemon"
                 tag: "{{.ImageName}}"
+
+#    sphinx:
+#        build:
+#            context: ./images/sphinx
+#        container_name: sphinx
+#        depends_on:
+#            - "db"
+#        volumes:
+#            - ${MP_WEB}:/var/www/magicpro
+#            - ${DATA_SPHINX}:/var/lib/sphinxsearch/data
+#        ports:
+#            - "9312:9312"
+#            - "9306:9306"
+#        networks:
+#            - net
+#        restart: unless-stopped
+#        logging:
+#            driver: "syslog"
+#            options:
+#                syslog-address: "udp://127.0.0.1:5514"
+#                syslog-facility: "daemon"
+#                tag: "{{.ImageName}}"
 
     nodejs:
         build:

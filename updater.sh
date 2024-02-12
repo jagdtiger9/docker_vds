@@ -1,5 +1,5 @@
 # usage:
-# PROJECT=project_name bash updater.sh
+# PROJECT=project_name /bin/bash updater.sh
 
 make project.user PROJECT=${PROJECT} CMD="php cli.php common:updater@update"
 
