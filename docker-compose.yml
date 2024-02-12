@@ -206,27 +206,27 @@ services:
                 syslog-facility: "daemon"
                 tag: "{{.ImageName}}"
 
-#    sphinx:
-#        build:
-#            context: ./images/sphinx
-#        container_name: sphinx
-#        depends_on:
-#            - "db"
-#        volumes:
-#            - ${MP_WEB}:/var/www/magicpro
-#            - ${DATA_SPHINX}:/var/lib/sphinxsearch/data
-#        ports:
-#            - "9312:9312"
-#            - "9306:9306"
-#        networks:
-#            - net
-#        restart: unless-stopped
-#        logging:
-#            driver: "syslog"
-#            options:
-#                syslog-address: "udp://127.0.0.1:5514"
-#                syslog-facility: "daemon"
-#                tag: "{{.ImageName}}"
+    #    sphinx:
+    #        build:
+    #            context: ./images/sphinx
+    #        container_name: sphinx
+    #        depends_on:
+    #            - "db"
+    #        volumes:
+    #            - ${MP_WEB}:/var/www/magicpro
+    #            - ${DATA_SPHINX}:/var/lib/sphinxsearch/data
+    #        ports:
+    #            - "9312:9312"
+    #            - "9306:9306"
+    #        networks:
+    #            - net
+    #        restart: unless-stopped
+    #        logging:
+    #            driver: "syslog"
+    #            options:
+    #                syslog-address: "udp://127.0.0.1:5514"
+    #                syslog-facility: "daemon"
+    #                tag: "{{.ImageName}}"
 
     nodejs:
         build:
@@ -249,7 +249,6 @@ services:
     logger:
         image: lscr.io/linuxserver/syslog-ng:latest
         container_name: logger
-        user: ${UID:-1000}:${GID:-1000}
         environment:
             - PUID=${UID:-1000}
             - PGID=${GID:-1000}

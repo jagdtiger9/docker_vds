@@ -1,8 +1,15 @@
 #container=fpm, db, etc...
 include .env
 
+define permissions
+    mkdir -p -m 0777 ${DATA_MYSQL} && mkdir -p -m 0777 ${DATA_LOG}
+endef
+
 up:
-	mkdir -p -m 0777 ${DATA_MYSQL} && ${COMPOSE_BIN} up -d --remove-orphans
+	$(permissions) && ${COMPOSE_BIN} up -d --remove-orphans
+
+permissions:
+	$(permissions)
 
 build:
 	${COMPOSE_BIN} stop
