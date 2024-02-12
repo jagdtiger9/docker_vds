@@ -2,7 +2,7 @@
 include .env
 
 up:
-	${COMPOSE_BIN} up -d --remove-orphans
+	mkdir -p -m 0777 ${DATA_MYSQL} && ${COMPOSE_BIN} up -d --remove-orphans
 
 build:
 	${COMPOSE_BIN} stop

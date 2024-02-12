@@ -249,6 +249,7 @@ services:
     logger:
         image: lscr.io/linuxserver/syslog-ng:latest
         container_name: logger
+        user: ${UID:-1000}:${GID:-1000}
         environment:
             - PUID=${UID:-1000}
             - PGID=${GID:-1000}
