@@ -159,10 +159,8 @@ services:
     phpmyadmin:
         image: phpmyadmin/phpmyadmin
         container_name: phpmyadmin
-        links:
-            - db:db
         ports:
-            - "8081:80"
+            - "${PMA_PORT_MAP:-:80}"
         networks:
             - net
         environment:
