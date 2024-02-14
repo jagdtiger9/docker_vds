@@ -25,7 +25,7 @@ services:
         logging:
             driver: "syslog"
             options:
-                syslog-address: "udp://127.0.0.1:5514"
+                syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
                 tag: "nginx"
 
@@ -40,7 +40,7 @@ services:
         logging:
             driver: "syslog"
             options:
-                syslog-address: "udp://127.0.0.1:5514"
+                syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
                 tag: "certbot"
 
@@ -53,7 +53,6 @@ services:
                 php_version: ${PHP_VERSION:-8.2}
                 allow_xdebug: ${ALLOW_XDEBUG:-1}
         container_name: php-fpm
-
         environment:
             # service container environment
             - PHP_VERSION=${PHP_VERSION:-8.2}
@@ -61,17 +60,15 @@ services:
         volumes:
             - ${DATA_HOSTS}:/var/www
             - ${DATA_XDEBUG}:/tmp/xdebug
-        ports:
-            - "9000:9000"
         networks:
             - net
         restart: unless-stopped
         logging:
             driver: "syslog"
             options:
-                syslog-address: "udp://127.0.0.1:5514"
+                syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
-                tag: "{{.ImageName}}"
+                tag: "fpm"
 
     crontab:
         build:
@@ -94,9 +91,9 @@ services:
         logging:
             driver: "syslog"
             options:
-                syslog-address: "udp://127.0.0.1:5514"
+                syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
-                tag: "{{.ImageName}}"
+                tag: "crontab"
 
     workers:
         build:
@@ -125,21 +122,18 @@ services:
         logging:
             driver: "syslog"
             options:
-                syslog-address: "udp://127.0.0.1:5514"
+                syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
-                tag: "{{.ImageName}}"
+                tag: "workers"
 
     db:
         image: percona:ps-8
         container_name: db
-        #user: ${UID:-1000}:${GID:-1000}
         volumes:
             - ${DATA_MYSQL}:/var/lib/mysql
             - ${CONF_MYSQL}:/etc/my.cnf.d:ro
         ports:
-            - "3306:3306"
-        links:
-            - "logger"
+            - "${DB_PORT_MAP:-:3306}"
         networks:
             net:
                 ipv4_address: 192.168.17.33
@@ -152,7 +146,7 @@ services:
         logging:
             driver: "syslog"
             options:
-                syslog-address: "udp://127.0.0.1:5514"
+                syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
                 tag: "{{.ImageName}}"
 
@@ -172,15 +166,13 @@ services:
     memcached:
         image: memcached
         container_name: memcached
-        ports:
-            - "11211:11211"
         networks:
             - net
         restart: unless-stopped
         logging:
             driver: "syslog"
             options:
-                syslog-address: "udp://127.0.0.1:5514"
+                syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
                 tag: "{{.ImageName}}"
 
@@ -192,15 +184,13 @@ services:
             - ${DATA_REDIS}:/tmp/redis
             - ${CONF_REDIS}:/usr/local/etc/redis/redis.conf
         command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
-        ports:
-            - "6379:6379"
         networks:
             - net
         restart: unless-stopped
         logging:
             driver: "syslog"
             options:
-                syslog-address: "udp://127.0.0.1:5514"
+                syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
                 tag: "{{.ImageName}}"
 
@@ -222,7 +212,7 @@ services:
     #        logging:
     #            driver: "syslog"
     #            options:
-    #                syslog-address: "udp://127.0.0.1:5514"
+    #                syslog-address: "udp://127.0.0.1:514"
     #                syslog-facility: "daemon"
     #                tag: "{{.ImageName}}"
 
@@ -240,9 +230,9 @@ services:
         logging:
             driver: "syslog"
             options:
-                syslog-address: "udp://127.0.0.1:5514"
+                syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
-                tag: "{{.ImageName}}"
+                tag: "nodejs"
 
     logger:
         image: lscr.io/linuxserver/syslog-ng:latest
@@ -255,8 +245,6 @@ services:
             - ${CONF_LOG}:/config/syslog-ng.conf
             - ${DATA_LOG}:/var/log #optional
         ports:
-            - "127.0.0.1:5514:5514/udp"
-            - "127.0.0.1:6601:6601/tcp"
             - 514:5514/udp
             - 601:6601/tcp
             - 6514:6514/tcp
