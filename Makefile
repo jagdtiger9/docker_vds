@@ -41,7 +41,10 @@ permissions:
 	$(permissions)
 
 define permissions
-    mkdir -p -m 0777 ${DATA_MYSQL} && mkdir -p -m 0777 ${DATA_LOG} && mkdir -p -m 0777 ${CERTBOT_WEB} && mkdir -p -m 0777 ${CERTBOT_SSL}
+    mkdir -p -m 0777 ${DATA_MYSQL} \
+    && mkdir -p -m 0777 ${DATA_LOG} \
+    && mkdir -p -m 0777 ${CERTBOT_WEB} \
+    && mkdir -p -m 0777 ${CERTBOT_SSL}
 endef
 
 tests:

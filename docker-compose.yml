@@ -133,13 +133,12 @@ services:
             - ${DATA_MYSQL}:/var/lib/mysql
             - ${CONF_MYSQL}:/etc/my.cnf.d:ro
         ports:
-            - "${DB_PORT_MAP:-:3306}"
+            - "${DB_PORT_MAP:-65001:65001}"
         networks:
             net:
                 ipv4_address: 192.168.17.33
         environment:
             MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-        #command: [ chmod, '0777', /var/lib/mysql ]
         healthcheck:
             test: [ "CMD", "mysqladmin", "-uroot", "-p$MYSQL_ROOT_PASSWORD",  "ping", "-h", "localhost" ]
         restart: unless-stopped
@@ -154,7 +153,7 @@ services:
         image: phpmyadmin/phpmyadmin
         container_name: phpmyadmin
         ports:
-            - "${PMA_PORT_MAP:-:80}"
+            - "${PMA_PORT_MAP:-65002:65002}"
         networks:
             - net
         environment:
