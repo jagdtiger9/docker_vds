@@ -42,6 +42,7 @@ permissions:
 
 define permissions
     mkdir -p -m 0777 ${DATA_MYSQL} \
+    && mkdir -p -m 0777 ${DATA_HOSTS} \
     && mkdir -p -m 0777 ${DATA_LOG} \
     && mkdir -p -m 0777 ${CERTBOT_WEB} \
     && mkdir -p -m 0777 ${CERTBOT_SSL}
