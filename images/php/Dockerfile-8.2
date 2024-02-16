@@ -78,11 +78,7 @@ COPY conf/php8.ini /etc/php/${PHP_VERSION}/php.ini
 
 RUN echo "Starting with UID : ${USER}, GID : ${GROUP}" \
 	&& groupadd --gid ${GROUP} group \
-	&& useradd --shell /bin/bash --uid ${USER} --gid ${GROUP} -o -c "" -m user
-
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+	&& useradd --shell /bin/bash --uid ${USER} -G ${GROUP},docker_env -o -c "" -m user
 
 # Use baseimage-docker's init system.
-#CMD ["/sbin/my_init"]
+CMD ["/sbin/my_init"]

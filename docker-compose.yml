@@ -108,11 +108,11 @@ services:
             XDEBUG_PORT: ${XDEBUG_PORT:-9001}
             USER: ${UID:-0}
         volumes:
-            - ${DATA_HOSTS}:/var/www
             - /etc/passwd:/etc/passwd
             - /etc/group:/etc/group
+            - ${DATA_HOSTS}:/var/www
             - ${CONF_WORKER}:/etc/supervisor/conf.d/
-        command: [ "/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf" ]
+        command: [ '/usr/bin/supervisord', '-c', '/etc/supervisor/supervisord.conf' ]
         depends_on:
             db:
                 condition: service_healthy
