@@ -10,6 +10,12 @@ run:
 initialization:
 	docker compose exec fpm /bin/bash -c 'groupadd --gid ${GID} gr${GID}; useradd --shell /bin/bash --uid ${UID} --gid ${GID} -m u${UID}'
 
+up.pma:
+	COMPOSE_PROFILES=debug ${COMPOSE_BIN} up -d
+
+down.pma:
+	COMPOSE_PROFILES=debug ${COMPOSE_BIN} down
+
 up:
 	$(permissions) && ${COMPOSE_BIN} up -d --remove-orphans
 
