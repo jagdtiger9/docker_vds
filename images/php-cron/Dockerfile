@@ -9,3 +9,5 @@ ARG allow_xdebug
 # https://github.com/phusion/baseimage-docker#running_startup_scripts
 
 RUN if [ "$allow_xdebug" = "0" ]; then phpdismod xdebug; fi
+
+COPY ./images/php-cron/vhosts_cron  /etc/cron.d/vosts_cron

@@ -1,4 +1,4 @@
-#container=fpm, db, etc...
+# https://stackoverflow.com/questions/58852571/catch-all-helper-for-makefile-when-the-possible-arguments-can-include-a-colon-ch
 include .env
 
 #  См. readme
@@ -18,6 +18,8 @@ ps:
 # make run CMD="cd public; yarn install"
 run:
 	docker compose exec --user ${UID}:${GID} fpm /bin/bash -c 'cd /var/www/${PROJECT}; $(CMD)'
+fpm:
+	docker compose exec fpm /bin/bash -c '$(CMD)'
 
 # Подключение-отключение phpmyadmin на продакшн
 up.pma:
@@ -57,10 +59,6 @@ endef
 
 tests:
 	${COMPOSE_BIN} -f docker-compose.yml run tests
-
-# https://stackoverflow.com/questions/58852571/catch-all-helper-for-makefile-when-the-possible-arguments-can-include-a-colon-ch
-fpm:
-	docker compose exec fpm /bin/bash -c '$(CMD)'
 
 nginx.reload:
 	docker compose exec nginx nginx -s reload

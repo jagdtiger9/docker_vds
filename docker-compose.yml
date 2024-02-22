@@ -9,7 +9,7 @@ services:
     nginx:
         image: nginx:alpine
         container_name: nginx
-        profiles: [base]
+        profiles: [ base ]
         volumes:
             - ${CONF_NGINX}:/etc/nginx/nginx.conf
             - ${CONF_HOSTS}:/etc/nginx/conf.d:ro
@@ -34,7 +34,7 @@ services:
     certbot:
         image: certbot/certbot:latest
         container_name: certbot
-        profiles: [prod]
+        profiles: [ prod ]
         #user: ${UID:-1000}:${GID:-1000}
         volumes:
             - ${CERTBOT_WEB}:/var/www/certbot/:rw
@@ -55,7 +55,7 @@ services:
                 php_version: ${PHP_VERSION:-8.2}
                 allow_xdebug: ${ALLOW_XDEBUG:-1}
         container_name: php-fpm
-        profiles: [base]
+        profiles: [ base ]
         environment:
             # service container environment
             - PHP_VERSION=${PHP_VERSION:-8.2}
@@ -81,14 +81,14 @@ services:
                 - php_version=${PHP_VERSION:-8.2}
                 - allow_xdebug=${ALLOW_XDEBUG:-1}
         container_name: php-cron
-        profiles: [base]
+        profiles: [ base ]
         environment:
             PHP_VERSION: ${PHP_VERSION:-8.2}
             XDEBUG_PORT: ${XDEBUG_PORT:-9001}
         volumes:
             - ${DATA_HOSTS}:/var/www
             - ${DATA_XDEBUG}:/tmp/xdebug
-            - ${CONF_CRON}:/etc/cron.d/hosts_crontab
+            - ${CONF_CRON}:/hosts_crontab
         networks:
             - net
         restart: unless-stopped
@@ -107,7 +107,7 @@ services:
                 - php_version=${PHP_VERSION:-8.2}
                 - user=${UID:-1}
         container_name: php-worker
-        profiles: [base]
+        profiles: [ base ]
         environment:
             PHP_VERSION: ${PHP_VERSION:-8.2}
             XDEBUG_PORT: ${XDEBUG_PORT:-9001}
@@ -134,7 +134,7 @@ services:
     db:
         image: percona:ps-8
         container_name: db
-        profiles: [base]
+        profiles: [ base ]
         volumes:
             - ${DATA_MYSQL}:/var/lib/mysql
             - ${CONF_MYSQL}:/etc/my.cnf.d:ro
@@ -158,7 +158,7 @@ services:
     phpmyadmin:
         image: phpmyadmin/phpmyadmin
         container_name: phpmyadmin
-        profiles: [debug]
+        profiles: [ debug ]
         ports:
             - "8081:80"
         networks:
@@ -172,7 +172,7 @@ services:
     memcached:
         image: memcached
         container_name: memcached
-        profiles: [base]
+        profiles: [ base ]
         networks:
             - net
         restart: unless-stopped
@@ -186,7 +186,7 @@ services:
     redis:
         image: redis
         container_name: redis
-        profiles: [base]
+        profiles: [ base ]
         user: ${UID:-1000}:${GID:-1000}
         volumes:
             - ${DATA_REDIS}:/tmp/redis
@@ -228,7 +228,7 @@ services:
         build:
             context: ./images/nodejs
         container_name: nodejs
-        profiles: [frontend]
+        profiles: [ frontend ]
         ports:
             - "8085:8085"
             - "8086:8086"
@@ -246,7 +246,7 @@ services:
     logger:
         image: lscr.io/linuxserver/syslog-ng:latest
         container_name: logger
-        profiles: [base]
+        profiles: [ base ]
         environment:
             - PUID=${UID:-1000}
             - PGID=${GID:-1000}

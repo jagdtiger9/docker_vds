@@ -65,8 +65,7 @@ RUN if [ ${ADD_ROTATOR} && -f "/tmp/rotator_8.tgz" ]; then tar -zxf /tmp/rotator
     && echo "extension=rotator.so" > /etc/php/${PHP_VERSION}/mods-available/rotator.ini \
     && phpenmod rotator ; fi
 
-RUN apt-get remove -y curl \
-	&& apt-get clean \
+RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Config files

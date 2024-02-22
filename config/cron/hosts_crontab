@@ -1,3 +1,4 @@
-# And new base crontab record for every new host
+#!/bin/bash
 
-* *     * * *     www-data   mkdir -p -m 0777 /var/www/magicpro/public/vardata/log/crontab && /usr/bin/php /var/www/magicpro/cli.php >> /var/www/magicpro/public/vardata/log/crontab/cron.log 2>&1
+# And new base crontab record for every new host
+mkdir -p -m 0777 /var/www/magicpro/public/vardata/log/crontab && /usr/bin/php /var/www/magicpro/cli.php >> /var/www/magicpro/public/vardata/log/crontab/cron.log 2>&1

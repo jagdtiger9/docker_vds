@@ -12,14 +12,14 @@ ENV ADD_ROTATOR ${ADD_ROTATOR:-1}
 # child image installation gets "memcached module required" error
 # apt update & install in one command => https://stackoverflow.com/questions/54024620/do-ubuntu-php-repositories-expire/54024750
 RUN apt-get -y update \
-    && apt-get install -y software-properties-common \
-    && apt-get install -y language-pack-en-base \
+    && install_clean software-properties-common \
+    && install_clean language-pack-en-base \
     && LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php \
-    && apt-get install -y php${PHP_VERSION} php-pear php${PHP_VERSION}-dev php${PHP_VERSION}-cli php${PHP_VERSION}-fpm php${PHP_VERSION}-curl php${PHP_VERSION}-gd php${PHP_VERSION}-gmp \
-    && apt-get install -y php${PHP_VERSION}-apcu php${PHP_VERSION}-mysqlnd php${PHP_VERSION}-sqlite3 php${PHP_VERSION}-memcached php${PHP_VERSION}-memcache php${PHP_VERSION}-xdebug \
-    && apt-get install -y php${PHP_VERSION}-imagick php${PHP_VERSION}-imap php${PHP_VERSION}-bcmath php${PHP_VERSION}-xml php${PHP_VERSION}-mbstring  php${PHP_VERSION}-zip php${PHP_VERSION}-intl \
-    && apt-get install -y sqlite3 unzip webp libwebp-dev libjpeg-dev libpng-dev libtiff-dev libgif-dev imagemagick \
-    && apt-get install -y mysql-client git php-json \
+    && install_clean php${PHP_VERSION} php-pear php${PHP_VERSION}-dev php${PHP_VERSION}-cli php${PHP_VERSION}-fpm php${PHP_VERSION}-curl php${PHP_VERSION}-gd php${PHP_VERSION}-gmp \
+    && install_clean php${PHP_VERSION}-apcu php${PHP_VERSION}-mysqlnd php${PHP_VERSION}-sqlite3 php${PHP_VERSION}-memcached php${PHP_VERSION}-memcache php${PHP_VERSION}-xdebug \
+    && install_clean php${PHP_VERSION}-imagick php${PHP_VERSION}-imap php${PHP_VERSION}-bcmath php${PHP_VERSION}-xml php${PHP_VERSION}-mbstring  php${PHP_VERSION}-zip php${PHP_VERSION}-intl \
+    && install_clean sqlite3 unzip webp libwebp-dev libjpeg-dev libpng-dev libtiff-dev libgif-dev imagemagick \
+    && install_clean mysql-client git php-json curl make \
     && update-alternatives --set php /usr/bin/php${PHP_VERSION} \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -40,7 +40,7 @@ RUN curl -L -o phpredis.zip https://github.com/phpredis/phpredis/archive/develop
 
 # Node
 RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
+    && install_clean nodejs \
     && corepack enable
 
 # Composer
@@ -63,7 +63,7 @@ RUN if [ ${ADD_ROTATOR} && -f "/tmp/rotator_8.tgz" ]; then tar -zxf /tmp/rotator
     && echo "extension=rotator.so" > /etc/php/${PHP_VERSION}/mods-available/rotator.ini \
     && phpenmod rotator ; fi
 
-RUN apt-get remove -y curl \
+RUN apt-get remove -y make \
 	&& apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
