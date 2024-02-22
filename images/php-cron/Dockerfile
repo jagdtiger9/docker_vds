@@ -10,4 +10,5 @@ ARG allow_xdebug
 
 RUN if [ "$allow_xdebug" = "0" ]; then phpdismod xdebug; fi
 
-COPY ./images/php-cron/vhosts_cron  /etc/cron.d/vosts_cron
+COPY ./images/php-cron/vhosts_cron  /etc/cron.d/vhosts_cron
+RUN chmod 0644 /etc/cron.d/vhosts_cron
