@@ -2,12 +2,12 @@
 include .env
 
 #  См. readme
-initialization:
+init:
 	docker compose exec fpm /bin/bash -c 'groupadd --gid ${GID} gr${GID}; useradd --shell /bin/bash --uid ${UID} --gid ${GID} -m u${UID}'
 
 # Запуск-остановка-статус сервисов и контейнеров
 up:
-	$(permissions) && ${COMPOSE_BIN} up -d --remove-orphans
+	$(perms) && ${COMPOSE_BIN} up -d --remove-orphans
 down:
 	${COMPOSE_BIN} down
 ps:
@@ -46,10 +46,10 @@ rebuild:
 pull:
 	${COMPOSE_BIN} pull
 
-permissions:
-	$(permissions)
+perms:
+	$(perms)
 
-define permissions
+define perms
     mkdir -p -m 0777 ${DATA_MYSQL} \
     && mkdir -p -m 0777 ${DATA_HOSTS} \
     && mkdir -p -m 0777 ${DATA_LOG} \
