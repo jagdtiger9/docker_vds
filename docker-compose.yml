@@ -166,6 +166,7 @@ services:
             MYSQL_USERNAME: root
             MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
             UPLOAD_LIMIT: ${UPLOAD_LIMIT}
+            PMA_HOST: ${PMA_HOST}
         restart: unless-stopped
 
     memcached:

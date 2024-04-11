@@ -72,3 +72,14 @@ $ make run CMD="cd public; yarn install"
 $ make run PROJECT="symfony" CMD="yarn build"
 $ make run PROJECT="symfony" CMD="cd public; yarn install"
 ```
+
+## Подключение к сервисам хост машина, на примере mysql-percona
+
+В качестве хоста используем 172.17.0.1, адрес хоста в сети docker0 (по-умолчанию) для linux машин
+```bash
+create user 'root'@'192.168.17.%' identified by '...';
+grant all on *.* to 'root'@'192.168.17.%' with grant option;
+```
+https://www.techrepublic.com/article/create-mysql-8-database-user-remote-access-databases/
+
+
