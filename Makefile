@@ -55,7 +55,8 @@ define perms
     && mkdir -p -m 0777 ${DATA_LOG} \
     && mkdir -p -m 0777 ${DATA_REDIS} \
     && mkdir -p -m 0777 ${CERTBOT_WEB} \
-    && mkdir -p -m 0777 ${CERTBOT_SSL}
+    && mkdir -p -m 0777 ${CERTBOT_SSL} \
+    && mkdir -p -m 0777 ${CONF_WORKER}
 endef
 
 tests:

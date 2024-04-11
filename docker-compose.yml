@@ -133,7 +133,7 @@ services:
     db:
         image: percona:ps-8
         container_name: db
-        profiles: [ base ]
+        profiles: [ database ]
         volumes:
             - ${DATA_MYSQL}:/var/lib/mysql
             - ${CONF_MYSQL}:/etc/my.cnf.d:ro
