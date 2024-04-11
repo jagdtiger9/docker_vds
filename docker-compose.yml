@@ -117,9 +117,9 @@ services:
             - ${DATA_HOSTS}:/var/www
             - ${CONF_WORKER}:/etc/supervisor/conf.d/
         command: [ '/usr/bin/supervisord', '-c', '/etc/supervisor/supervisord.conf' ]
-        depends_on:
-            db:
-                condition: service_healthy
+#        depends_on:
+#            db:
+#                condition: service_healthy
         networks:
             - net
         restart: unless-stopped
