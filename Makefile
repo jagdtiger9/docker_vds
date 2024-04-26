@@ -49,6 +49,9 @@ pull:
 perms:
 	$(perms)
 
+# Для создания директории крона используется двойной символ $$
+# $ в make-файлах - символ определения переменной, для использования в командном контексте его нужно экранировать
+# https://stackoverflow.com/questions/74295605/why-call-from-makefile-returns-empty-result-while-same-call-from-console-does-no
 define perms
     mkdir -p -m 0777 ${DATA_MYSQL} \
     && mkdir -p -m 0777 ${DATA_HOSTS} \
@@ -56,11 +59,20 @@ define perms
     && mkdir -p -m 0777 ${DATA_REDIS} \
     && mkdir -p -m 0777 ${CERTBOT_WEB} \
     && mkdir -p -m 0777 ${CERTBOT_SSL} \
+    && mkdir -p -m 0777 ${CONF_HOSTS} \
+    && mkdir -p -m 0777 $$(echo ${CONF_CRON} | rev | cut -d"/" -f2- | rev) \
+    && touch ${CONF_CRON} \
     && mkdir -p -m 0777 ${CONF_WORKER}
 endef
 
 tests:
 	${COMPOSE_BIN} -f docker-compose.yml run tests
+
+# Добавление нового хоста
+# make new.host HOST="host.domain"
+new.host:
+	cp ./config/nginx/hosts/default.host.conf_https ${CONF_HOSTS}default.host.conf \
+	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}default.host.conf
 
 nginx.reload:
 	docker compose exec nginx nginx -s reload
