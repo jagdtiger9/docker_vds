@@ -12,6 +12,7 @@ make run PROJECT=${PROJECT} CMD="yarn install"
 make run PROJECT=${PROJECT} CMD="yarn build"
 make run PROJECT=${PROJECT} CMD="cd public; yarn install; rm -r vendorjs; mv node_modules vendorjs;"
 
+# check env DB_PORT_MAP param
 #mysql -h localhost --protocol=tcp -u root -p ithub_ru < database.sql
 
 # Apply single container changes
