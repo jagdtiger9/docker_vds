@@ -71,8 +71,8 @@ tests:
 # Добавление нового хоста
 # make new.host HOST="host.domain"
 new.host:
-	cp ./config/nginx/hosts/default.host.conf_https ${CONF_HOSTS}default.host.conf \
-	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}default.host.conf
+	cp ./config/nginx/hosts/default.host.conf_https ${CONF_HOSTS}${HOST}.conf \
+	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
 
 nginx.reload:
 	docker compose exec nginx nginx -s reload
