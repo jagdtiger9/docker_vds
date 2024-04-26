@@ -8,7 +8,7 @@ services:
     nginx:
         image: nginx:alpine
         container_name: nginx
-        profiles: [ base ]
+        profiles: [ main ]
         volumes:
             - ${CONF_NGINX}:/etc/nginx/nginx.conf
             - ${CONF_HOSTS}:/etc/nginx/conf.d:ro
@@ -54,7 +54,7 @@ services:
                 php_version: ${PHP_VERSION:-8.2}
                 allow_xdebug: ${ALLOW_XDEBUG:-1}
         container_name: php-fpm
-        profiles: [ base ]
+        profiles: [ main ]
         environment:
             # service container environment
             - PHP_VERSION=${PHP_VERSION:-8.2}
@@ -80,7 +80,7 @@ services:
                 - php_version=${PHP_VERSION:-8.2}
                 - allow_xdebug=${ALLOW_XDEBUG:-1}
         container_name: php-cron
-        profiles: [ base ]
+        profiles: [ main ]
         environment:
             PHP_VERSION: ${PHP_VERSION:-8.2}
             XDEBUG_PORT: ${XDEBUG_PORT:-9001}
@@ -106,7 +106,7 @@ services:
                 - php_version=${PHP_VERSION:-8.2}
                 - user=${UID:-1}
         container_name: php-worker
-        profiles: [ base ]
+        profiles: [ main ]
         environment:
             PHP_VERSION: ${PHP_VERSION:-8.2}
             XDEBUG_PORT: ${XDEBUG_PORT:-9001}
@@ -172,7 +172,7 @@ services:
     memcached:
         image: memcached
         container_name: memcached
-        profiles: [ base ]
+        profiles: [ main ]
         networks:
             - net
         restart: unless-stopped
@@ -186,7 +186,7 @@ services:
     redis:
         image: redis
         container_name: redis
-        profiles: [ base ]
+        profiles: [ main ]
         user: ${UID:-1000}:${GID:-1000}
         volumes:
             - ${DATA_REDIS}:/tmp/redis
@@ -246,7 +246,7 @@ services:
     logger:
         image: lscr.io/linuxserver/syslog-ng:latest
         container_name: logger
-        profiles: [ base ]
+        profiles: [ main ]
         environment:
             - PUID=${UID:-1000}
             - PGID=${GID:-1000}
