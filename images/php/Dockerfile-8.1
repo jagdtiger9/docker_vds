@@ -17,7 +17,7 @@ RUN apt-get -y update \
 # child image installation gets "memcached module required" error
 # apt update & install in one command => https://stackoverflow.com/questions/54024620/do-ubuntu-php-repositories-expire/54024750
 RUN apt-get -y update \
-    && apt-get install -y php${PHP_VERSION} php-pear php${PHP_VERSION}-dev php${PHP_VERSION}-cli php${PHP_VERSION}-fpm php${PHP_VERSION}-curl php${PHP_VERSION}-gd php${PHP_VERSION}-gmp \
+    && apt-get install -y php${PHP_VERSION} php-pear php${PHP_VERSION}-dev php${PHP_VERSION}-cli php${PHP_VERSION}-fpm php${PHP_VERSION}-curl php${PHP_VERSION}-gd php${PHP_VERSION}-gmp php${PHP_VERSION}-amqp \
     && apt-get install -y php${PHP_VERSION}-apcu php${PHP_VERSION}-mysqlnd php${PHP_VERSION}-sqlite3 php${PHP_VERSION}-memcached php${PHP_VERSION}-memcache php${PHP_VERSION}-xdebug \
     && apt-get install -y php${PHP_VERSION}-imagick php${PHP_VERSION}-imap php${PHP_VERSION}-bcmath php${PHP_VERSION}-xml php${PHP_VERSION}-mbstring  php${PHP_VERSION}-zip php${PHP_VERSION}-intl \
     && apt-get install -y sqlite3 unzip webp libwebp-dev libjpeg-dev libpng-dev libtiff-dev libgif-dev imagemagick libmagickcore-6.q16-6-extra \

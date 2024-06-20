@@ -76,7 +76,22 @@ mkdir -p -m 0777 /var/www/magicpro/public/vardata/log/crontab && /usr/bin/php /v
 
 Если происходит перенос существующего проекта, копируем ssl сертификаты
 
-5.
+```bash
+# Проверка-обновление сертификатов, раз в месяц, 9-го числа
+20 05     09 * *     USER   cd ~/work/docker && make certbot.renew && make nginx.reload && echo `date` - OK >> ~/certbot.log
+```
+
+**Сертификаты для локальной разработки**
+
+```bash
+#https://habr.com/ru/articles/789442/
+#https://habr.com/ru/companies/globalsign/articles/435476/
+#https://itsfoss.com/homebrew-linux/
+$ make cert.local
+```
+
+После успешного создания сертификатов копируем их из директории __.cert__ в директорию ${CERTBOT_SSL}
+Используемое для сертификата имя домена - __magicpro.local__ (добавить в /etc/hosts)
 
 # Запуск
 
@@ -117,4 +132,20 @@ grant all on *.* to 'root'@'192.168.17.%' with grant option;
 
 https://www.techrepublic.com/article/create-mysql-8-database-user-remote-access-databases/
 
+## HTTPS для локальной разработки
 
+Создаем сертификаты для локальных проектов в директории CERTBOT_SSL(.env), следующими командами:
+
+> openssl req -x509 -new -out magicpro.crt -keyout magicpro.key -days 365 -newkey rsa:4096 -sha256 -nodes
+
+```
+Country Name (2 letter code) [AU]:RU
+State or Province Name (full name) [Some-State]:Msk
+Locality Name (eg, city) []:Msk
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:Local
+Organizational Unit Name (eg, section) []:
+Common Name (e.g. server FQDN or YOUR name) []:magicpro localhost
+Email Address []:
+```
+
+https://forums.docker.com/t/setup-local-domain-and-ssl-for-php-apache-container/116015/11
