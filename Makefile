@@ -82,7 +82,7 @@ certbot.create:
 	docker compose run --rm certbot certonly --keep --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
 
 certbot.delete:
-	docker compose run --rm certbot delete --cert-name -d ${DOMAIN}
+	docker compose run --rm certbot delete --cert-name ${DOMAIN}
 
 # Задачка в крон для ежемесячной проверки-продления сертификатов
 # 17 05     16 * *     project_user   cd ~/work/docker && make certbot.renew && make nginx.reload && echo 'test' >> ~/certbot.log

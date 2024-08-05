@@ -263,6 +263,32 @@ services:
             - net
         restart: unless-stopped
 
+    logrotate:
+        image: blacklabelops/logrotate
+        container_name: logrotate
+        profiles: [ main ]
+        user: ${UID:-1000}:${GID:-1000}
+        environment:
+            - LOGS_DIRECTORIES=/var/log/docker
+            - LOGROTATE_INTERVAL=hourly
+            - LOGROTATE_CRONSCHEDULE=0 */20 * * * *
+            - LOGROTATE_COPIES=${LOGROTATE_COPIES:-5}
+            - LOGROTATE_SIZE=${LOGROTATE_SIZE:-50M}
+            - LOGROTATE_COMPRESSION=compress
+            - LOGROTATE_LOGFILE=/var/log/docker/logrotatecron.log
+            - LOGROTATE_STATUSFILE=/var/log/docker/logrotate.status
+        volumes:
+            - ${DATA_LOG}:/var/log/docker
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "logrotate"
+
 networks:
     net:
         #name: dockerNet
