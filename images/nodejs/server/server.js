@@ -1,4 +1,5 @@
-'use strict';
+'use strict'
+
 const server = require(`websocket`).server;
 const httpServer = require(`http`).createServer();
 const redis = require(`redis`);

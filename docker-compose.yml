@@ -19,6 +19,13 @@ services:
         ports:
             - "80:80"
             - "443:443"
+            # WS HTTP/S INFO PORT
+            - "8085:8085"
+            - "8485:8485"
+            # WS PORT
+            - "8033:8033"
+            # WSS PORT
+            - "8433:8433"
         networks:
             - net
         restart: unless-stopped
@@ -230,10 +237,15 @@ services:
             context: ./images/nodejs
         container_name: nodejs
         profiles: [ frontend ]
-        ports:
-            - "8085:8085"
-            - "8086:8086"
-            - "1333:1333"
+        user: ${UID:-1000}:${GID:-1000}
+        environment:
+            - WS_PORT=${WS_PORT:-1333}
+            - WS_HTTP_PORT=${WS_HTTP_PORT:-8085}
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - REDIS_CHANNEL=datatube
+        volumes:
+            - ${WS_DATA:-/tmp}:${WS_PATH:-/tmp/empty:ro}
         networks:
             - net
         restart: unless-stopped
@@ -273,7 +285,7 @@ services:
             - LOGROTATE_INTERVAL=hourly
             - LOGROTATE_CRONSCHEDULE=0 */20 * * * *
             - LOGROTATE_COPIES=${LOGROTATE_COPIES:-5}
-            - LOGROTATE_SIZE=${LOGROTATE_SIZE:-50M}
+            - LOGROTATE_SIZE=${LOGROTATE_SIZE:-10M}
             - LOGROTATE_COMPRESSION=compress
             - LOGROTATE_LOGFILE=/var/log/docker/logrotatecron.log
             - LOGROTATE_STATUSFILE=/var/log/docker/logrotate.status
