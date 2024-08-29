@@ -280,7 +280,7 @@ services:
         image: blacklabelops/logrotate
         container_name: logrotate
         profiles: [ main ]
-        user: ${UID:-1000}:${GID:-1000}
+        user: ${LOG_ROTATE_USER:-1000}:${LOG_ROTATE_GROUP:-1000}
         environment:
             - LOGS_DIRECTORIES=/var/log/docker
             - LOGROTATE_INTERVAL=hourly
