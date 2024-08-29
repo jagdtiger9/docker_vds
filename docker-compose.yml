@@ -244,6 +244,7 @@ services:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - REDIS_CHANNEL=datatube
+            - WEB_HOOK=${WS_WEB_HOOK:-localhost}
         volumes:
             - ${WS_DATA:-/tmp}:${WS_PATH:-/tmp/empty:ro}
         networks:

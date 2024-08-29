@@ -121,7 +121,7 @@ $ make run PROJECT="symfony" CMD="yarn build"
 $ make run PROJECT="symfony" CMD="cd public; yarn install"
 ```
 
-## Подключение к сервисам хост машина, на примере mysql-percona
+## Подключение к сервисам хост машины, на примере mysql-percona
 
 В качестве хоста используем 172.17.0.1, адрес хоста в сети docker0 (по-умолчанию) для linux машин
 
