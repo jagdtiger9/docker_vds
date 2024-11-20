@@ -176,6 +176,31 @@ services:
             PMA_HOST: ${PMA_HOST}
         restart: unless-stopped
 
+    buggregator:
+        image: ghcr.io/buggregator/server:latest
+        container_name: buggregator
+        profiles:
+            - debug
+        ports:
+            - 8000:8000
+            - 1025:1025
+            - 9912:9912
+            - 9913:9913
+        networks:
+            - net
+        environment:
+            MYSQL_USERNAME: root
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            UPLOAD_LIMIT: ${UPLOAD_LIMIT}
+            PMA_HOST: ${PMA_HOST}
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "buggregator"
+
     memcached:
         image: memcached
         container_name: memcached
