@@ -42,7 +42,8 @@ services:
         image: certbot/certbot:latest
         container_name: certbot
         profiles: [ prod ]
-        entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+        # Unable to create new certs, doesn't work - $ make certbot.create
+        #entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
         #user: ${UID:-1000}:${GID:-1000}
         volumes:
             - ${CERTBOT_WEB}:/var/www/certbot/:rw
