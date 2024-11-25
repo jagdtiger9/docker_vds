@@ -16,10 +16,9 @@ server {
 	index index.php index.html;
 	server_name magicpro.local;
 
-	if (-f /etc/nginx/ssl/magicpro.crt1) {
-		ssl_certificate /etc/nginx/ssl/magicpro.crt;
-		ssl_certificate_key /etc/nginx/ssl/magicpro.key;
-	}
+    # copy certificates
+    ssl_certificate /etc/nginx/ssl/magicpro.crt;
+    ssl_certificate_key /etc/nginx/ssl/magicpro.key;
 
 	error_page 404 /e404;
 	client_max_body_size 300M;

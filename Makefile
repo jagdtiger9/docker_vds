@@ -61,6 +61,7 @@ define perms
     && mkdir -p -m 0777 ${CERTBOT_WEB} \
     && mkdir -p -m 0777 ${CERTBOT_SSL} \
     && mkdir -p -m 0777 ${CONF_HOSTS} \
+    && mkdir -p -m 0777 ${WS_DATA} \
     && mkdir -p -m 0777 $$(echo ${CONF_CRON} | rev | cut -d"/" -f2- | rev) \
     && touch ${CONF_CRON} \
     && mkdir -p -m 0777 ${CONF_WORKER}
@@ -90,10 +91,10 @@ certbot.renew:
 	docker compose run --rm certbot renew --webroot --webroot-path /var/www/certbot/
 certbot.renew.dry:
 	docker compose run --rm certbot renew --webroot --webroot-path /var/www/certbot/ --dry-run
+
 cert.local:
 	sudo apt install libnss3-tools \
-	&& /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
-	&& echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ${HOME}/.bash_profile \
-	&& eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" \
+	&& curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash -\
+	&& /home/linuxbrew/.linuxbrew/bin/brew shellenv >> ${HOME}/.bash_profile \
 	&& brew install mkcert \
 	&& mkdir -p .cert && mkcert -key-file ./.cert/magicpro.key -cert-file ./.cert/magicpro.crt 'magicpro.local'

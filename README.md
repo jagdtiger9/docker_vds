@@ -134,18 +134,9 @@ https://www.techrepublic.com/article/create-mysql-8-database-user-remote-access-
 
 ## HTTPS для локальной разработки
 
-Создаем сертификаты для локальных проектов в директории CERTBOT_SSL(.env), следующими командами:
-
-> openssl req -x509 -new -out magicpro.crt -keyout magicpro.key -days 365 -newkey rsa:4096 -sha256 -nodes
-
+```bash
+# Создаем локальный сертификат
+$ make cert.local
+# Копируем сертификаты в директорию CERTBOT_SSL(.env):
+$ cp ./../.cert/ ./data/letsencrypt/
 ```
-Country Name (2 letter code) [AU]:RU
-State or Province Name (full name) [Some-State]:Msk
-Locality Name (eg, city) []:Msk
-Organization Name (eg, company) [Internet Widgits Pty Ltd]:Local
-Organizational Unit Name (eg, section) []:
-Common Name (e.g. server FQDN or YOUR name) []:magicpro localhost
-Email Address []:
-```
-
-https://forums.docker.com/t/setup-local-domain-and-ssl-for-php-apache-container/116015/11
