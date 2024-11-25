@@ -14,6 +14,10 @@ make run PROJECT=${PROJECT} CMD="cd public; yarn install; rm -r vendorjs; mv nod
 
 # check env DB_PORT_MAP param
 #mysql -h localhost --protocol=tcp -u root -p ithub_ru < database.sql
+# docker cp dump_<date>.sql db:/dump.sql
+# docker exec -ti db mysql -u root -p
+# use database;
+# source /dump.sql;
 
 # Apply single container changes
 # https://stackoverflow.com/questions/31466428/how-to-restart-a-single-container-with-docker-compose/57185184#57185184

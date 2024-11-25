@@ -59,7 +59,19 @@ $ make down
 
 Конфиги nginx в директорию CONF_HOSTS
 
-2. **Cron**
+2. **Database**
+```bash
+# Via local mysql client (check env DB_PORT_MAP param)
+$ mysql -h localhost --protocol=tcp -u root -p ithub_ru < database.sql
+
+# Docker container import
+$ docker cp dump_<date>.sql db:/dump.sql
+$ docker exec -ti db mysql -u root -p
+> use database;
+> source /dump.sql;
+```
+
+3. **Cron**
 
 Для каждого проекта добавляем задачу в созданный после первого запуска файл CONF_CRON
 Только команду, без настроек времени и пользователя
@@ -70,9 +82,9 @@ $ make down
 mkdir -p -m 0777 /var/www/magicpro/public/vardata/log/crontab && /usr/bin/php /var/www/magicpro/cli.php >> /var/www/magicpro/public/vardata/log/crontab/cron.log 2>&1
 ```
 
-3. **Workers**
+4. **Workers**
 
-4. **Certbot**
+5. **Certbot**
 
 Если происходит перенос существующего проекта, копируем ssl сертификаты
 
@@ -140,3 +152,5 @@ $ make cert.local
 # Копируем сертификаты в директорию CERTBOT_SSL(.env):
 $ cp ./../.cert/ ./data/letsencrypt/
 ```
+https://github.com/FiloSottile/mkcert
+
