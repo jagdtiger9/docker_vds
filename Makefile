@@ -97,4 +97,5 @@ cert.local:
 	&& curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash -\
 	&& /home/linuxbrew/.linuxbrew/bin/brew shellenv >> ${HOME}/.bash_profile \
 	&& brew install mkcert \
-	&& mkdir -p .cert && mkcert -key-file ./.cert/magicpro.key -cert-file ./.cert/magicpro.crt 'magicpro.local'
+	&& mkcert -install \
+	&& mkdir -p .cert && mkcert -key-file ./.cert/magicpro.key -cert-file ./.cert/magicpro.crt magicpro.local
