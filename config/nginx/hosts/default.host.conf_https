@@ -73,6 +73,8 @@ server {
 }
 
 server {
+    # backlog directive can be used only once, for a single (main v.host)
+    # https://forum.nginx.org/read.php?2,284368,284398#msg-284398
 	listen 8433 backlog=4096;
 	http2 on;
 	server_name [DOMAIN_NAME];

@@ -147,9 +147,11 @@ https://www.techrepublic.com/article/create-mysql-8-database-user-remote-access-
 ## HTTPS для локальной разработки
 
 ```bash
-# Создаем локальный сертификат
-$ make cert.local
-# Копируем сертификаты в директорию CERTBOT_SSL(.env):
+# Устанавливаем необходимые пакеты
+$ make cert.local.install
+# Создаем локальный сертификат для указанного домена
+$ make cert.local DOMAIN=magicpro.local
+# Копируем созданные сертификаты в директорию CERTBOT_SSL(.env):
 $ cp ./../.cert/ ./data/letsencrypt/
 ```
 https://github.com/FiloSottile/mkcert
