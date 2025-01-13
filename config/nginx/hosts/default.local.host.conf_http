@@ -1,0 +1,63 @@
+server {
+	listen 80;
+	http2 on;
+	root /var/www/[DOMAIN_NAME]/public;
+	index index.php index.html;
+	server_name [DOMAIN_NAME];
+	#disable_symlinks off;
+
+	location / {
+		# try to serve file directly, fallback to /index.php
+		try_files $uri $uri/ /index.php$is_args$query_string;
+	}
+
+	error_page 404 /e404;
+	client_max_body_size 300M;
+
+	location ~ \.php$ {
+		try_files $uri =404;
+		fastcgi_pass php_fpm;
+		# fastcgi_pass fpm:9000;
+		include fastcgi_params;
+		fastcgi_index index.php;
+		fastcgi_split_path_info ^(.+\.php)(/.*)$;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+		fastcgi_param PATH_INFO $fastcgi_path_info;
+		#fastcgi_param HTTPS off;
+	}
+	location ~ /\.ht {
+		deny all;
+	}
+	location = /favicon.ico {
+		try_files /favicon.ico =204;
+	}
+}
+
+server {
+	listen 8085;
+	http2 on;
+	server_name  [DOMAIN_NAME];
+	location / {
+		proxy_pass http://[DOMAIN_NAME]:8085;
+		proxy_http_version 1.1;
+	}
+}
+
+server {
+    # backlog directive can be used only once, for a single (main v.host)
+    # https://forum.nginx.org/read.php?2,284368,284398#msg-284398
+	listen 8033;
+	http2 on;
+	server_name  [DOMAIN_NAME];
+	location / {
+		proxy_pass http://[DOMAIN_NAME]:1333;
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "Upgrade";
+		proxy_connect_timeout 36000;
+		proxy_read_timeout 36000;
+		proxy_send_timeout 36000;
+		tcp_nodelay on;
+	}
+}
