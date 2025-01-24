@@ -61,13 +61,13 @@ services:
             dockerfile: ./images/php-fpm/Dockerfile
             args:
                 # build context only
-                php_version: ${PHP_VERSION:-8.2}
+                php_version: ${PHP_VERSION:-8.3}
                 allow_xdebug: ${ALLOW_XDEBUG:-1}
         container_name: php-fpm
         profiles: [ main ]
         environment:
             # service container environment
-            - PHP_VERSION=${PHP_VERSION:-8.2}
+            - PHP_VERSION=${PHP_VERSION:-8.3}
             - XDEBUG_PORT=${XDEBUG_PORT:-9001}
         volumes:
             - ${DATA_HOSTS}:/var/www
@@ -87,12 +87,12 @@ services:
             context: .
             dockerfile: ./images/php-cron/Dockerfile
             args:
-                - php_version=${PHP_VERSION:-8.2}
+                - php_version=${PHP_VERSION:-8.3}
                 - allow_xdebug=${ALLOW_XDEBUG:-1}
         container_name: php-cron
         profiles: [ main ]
         environment:
-            PHP_VERSION: ${PHP_VERSION:-8.2}
+            PHP_VERSION: ${PHP_VERSION:-8.3}
             XDEBUG_PORT: ${XDEBUG_PORT:-9001}
         volumes:
             - ${DATA_HOSTS}:/var/www
@@ -113,12 +113,12 @@ services:
             context: .
             dockerfile: ./images/php-worker/Dockerfile
             args:
-                - php_version=${PHP_VERSION:-8.2}
+                - php_version=${PHP_VERSION:-8.3}
                 - user=${UID:-1}
         container_name: php-worker
         profiles: [ main ]
         environment:
-            PHP_VERSION: ${PHP_VERSION:-8.2}
+            PHP_VERSION: ${PHP_VERSION:-8.3}
             XDEBUG_PORT: ${XDEBUG_PORT:-9001}
             USER: ${UID:-0}
         volumes:
