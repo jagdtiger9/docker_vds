@@ -76,6 +76,12 @@ new.host:
 	cp ./config/nginx/hosts/default.host.conf_https ${CONF_HOSTS}${HOST}.conf \
 	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
 
+# Добавление нового хоста на локальной машине без поддержки SSL
+# make new.local.host HOST="host"
+new.local.host:
+	cp ./config/nginx/hosts/default.local.host.conf_http ${CONF_HOSTS}${HOST}.conf \
+	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
+
 nginx.reload:
 	docker compose exec nginx nginx -s reload
 
