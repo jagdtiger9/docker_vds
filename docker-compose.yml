@@ -179,6 +179,27 @@ services:
             PMA_HOST: ${PMA_HOST}
         restart: unless-stopped
 
+    logger:
+        image: logger/logger:dev
+        container_name: logger
+        profiles: [ local ]
+        volumes:
+            - ${CONF_LOGGER}:/etc/logger/logger.ini
+            - ${LOGGER_SERVICE_LOGS}:/var/log/logger2
+            - ${LOGGER_CLIENT_LOGS}:/var/logger
+        ports:
+            - 4535:4535
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "logger"
+
+
     buggregator:
         image: ghcr.io/buggregator/server:latest
         container_name: buggregator
@@ -250,6 +271,7 @@ services:
             - ${DATA_RABBITMQ}:/var/lib/rabbitmq
         ports:
             - 15672:15672
+            - 5672:5672
         networks:
             - net
         restart: unless-stopped
@@ -284,9 +306,9 @@ services:
                 syslog-facility: "daemon"
                 tag: "nodejs"
 
-    logger:
+    syslog:
         image: lscr.io/linuxserver/syslog-ng:latest
-        container_name: logger
+        container_name: syslog
         profiles: [ main ]
         environment:
             - PUID=${UID:-1000}
