@@ -180,7 +180,8 @@ services:
         restart: unless-stopped
 
     logger:
-        image: logger/logger:dev
+        #image: logger/logger:dev
+        image: lg.gpmradio.ru:5050/web/logger/logger/logger:dev
         container_name: logger
         profiles: [ local ]
         volumes:

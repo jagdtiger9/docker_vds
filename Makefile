@@ -56,6 +56,8 @@ define perms
     mkdir -p -m 0777 ${DATA_MYSQL} \
     && mkdir -p -m 0777 ${DATA_HOSTS} \
     && mkdir -p -m 0777 ${DATA_LOG} \
+    && mkdir -p -m 0777 ${LOGGER_SERVICE_LOGS} \
+    && mkdir -p -m 0777 ${LOGGER_CLIENT_LOGS} \
     && mkdir -p -m 0777 ${DATA_REDIS} \
     && mkdir -p -m 0777 ${DATA_RABBITMQ} \
     && mkdir -p -m 0777 ${CERTBOT_WEB} \
