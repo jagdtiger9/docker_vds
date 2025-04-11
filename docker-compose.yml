@@ -186,8 +186,8 @@ services:
         profiles: [ local ]
         volumes:
             - ${CONF_LOGGER}:/etc/logger/logger.ini
-            - ${LOGGER_SERVICE_LOGS}:/var/log/logger2
-            - ${LOGGER_CLIENT_LOGS}:/var/logger
+            - ${LOGGER_SERVICE_LOG}:/var/log/logger
+            - ${LOGGER_CLIENT_LOG}:/var/logger
         ports:
             - 4535:4535
         networks:
