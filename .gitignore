@@ -2,3 +2,4 @@
 .env
 /data/
 .cert/
+custom.yaml
