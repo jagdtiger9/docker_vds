@@ -72,6 +72,8 @@ services:
             # service container environment
             - PHP_VERSION=${PHP_VERSION:-8.3}
             - XDEBUG_PORT=${XDEBUG_PORT:-9001}
+            - UID=${UID:-1000}
+            - GID=${GID:-1000}
         volumes:
             - ${DATA_HOSTS}:/var/www
             - ${DATA_XDEBUG}:/tmp/xdebug

@@ -6,11 +6,6 @@ ARG allow_xdebug
 ARG php_version
 ENV php_version ${php_version:-8.1}
 
-ARG UID
-ARG GID
-ENV UID=${UID:-1000}
-ENV GID=${GID:-1000}
-
 ARG FPM_LOG_LEVEL
 ENV FPM_LOG_LEVEL ${FPM_LOG_LEVEL:-warning}
 
