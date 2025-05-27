@@ -75,6 +75,7 @@ services:
         volumes:
             - ${DATA_HOSTS}:/var/www
             - ${DATA_XDEBUG}:/tmp/xdebug
+        #entrypoint: [ "/entrypoint.sh" ]
         networks:
             - net
         restart: unless-stopped
@@ -192,7 +193,7 @@ services:
             - ${LOGGER_SERVICE_LOG}:/var/log/logger
             - ${LOGGER_CLIENT_LOG}:/var/logger
         ports:
-            - 4535:4535
+            - "4535:4535"
         networks:
             - net
         restart: unless-stopped
@@ -210,10 +211,10 @@ services:
         profiles:
             - debug
         ports:
-            - 8000:8000
-            - 1025:1025
-            - 9912:9912
-            - 9913:9913
+            - "8000:8000"
+            - "1025:1025"
+            - "9912:9912"
+            - "9913:9913"
         networks:
             - net
         environment:
@@ -274,8 +275,8 @@ services:
         volumes:
             - ${DATA_RABBITMQ}:/var/lib/rabbitmq
         ports:
-            - 15672:15672
-            - 5672:5672
+            - "15672:15672"
+            - "5672:5672"
         networks:
             - net
         restart: unless-stopped
@@ -322,9 +323,9 @@ services:
             - ${CONF_LOG}:/config/syslog-ng.conf
             - ${DATA_LOG}:/var/log #optional
         ports:
-            - 514:5514/udp
-            - 601:6601/tcp
-            - 6514:6514/tcp
+            - "514:5514/udp"
+            - "601:6601/tcp"
+            - "6514:6514/tcp"
         networks:
             - net
         restart: unless-stopped

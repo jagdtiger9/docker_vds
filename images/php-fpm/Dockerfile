@@ -3,9 +3,13 @@ FROM jagdtiger/php-dev-env-git:php${php_version}
 MAINTAINER gimatov@gmail.com
 
 ARG allow_xdebug
-
 ARG php_version
 ENV php_version ${php_version:-8.1}
+
+ARG UID
+ARG GID
+ENV UID=${UID:-1000}
+ENV GID=${GID:-1000}
 
 ARG FPM_LOG_LEVEL
 ENV FPM_LOG_LEVEL ${FPM_LOG_LEVEL:-warning}
@@ -28,3 +32,7 @@ ADD ./config/fpm/start${php_version}.sh /etc/service/php-fpm/run
 RUN if [ "$allow_xdebug" = "0" ]; then phpdismod xdebug; fi
 
 EXPOSE 9000
+
+COPY --chmod=755 ./images/php-fpm/entrypoint.sh /entrypoint.sh
+#RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

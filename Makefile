@@ -1,9 +1,9 @@
 # https://stackoverflow.com/questions/58852571/catch-all-helper-for-makefile-when-the-possible-arguments-can-include-a-colon-ch
 include .env
 
-#  См. readme
-init:
-	docker compose exec fpm /bin/bash -c 'groupadd --gid ${GID} gr${GID}; useradd --shell /bin/bash --uid ${UID} --gid ${GID} -m u${UID}'
+ifndef SERVICE
+override SERVICE=fpm
+endif
 
 # Запуск-остановка-статус сервисов и контейнеров
 up:
@@ -94,8 +94,9 @@ run:
 	docker compose exec --user ${UID}:${GID} fpm /bin/bash -c 'cd /var/www/${PROJECT}; $(CMD)'
 run.cmd:
 	docker compose exec --user ${UID}:${GID} ${SERVICE} /bin/bash -c '$(CMD)'
-fpm:
-	docker compose exec fpm /bin/bash -c '$(CMD)'
+#  См. readme
+init:
+	docker compose exec ${SERVICE} /bin/bash -c 'groupadd --gid ${GID} gr${GID}; useradd --shell /bin/bash --uid ${UID} --gid ${GID} -m u${UID}'
 
 # Подключение-отключение phpmyadmin на продакшн
 up.pma:
