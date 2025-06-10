@@ -78,9 +78,10 @@ certbot.renew.dry:
 cert.local.install:
 	sudo apt install libnss3-tools \
 	&& curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash -\
-	&& /home/linuxbrew/.linuxbrew/bin/brew shellenv >> ${HOME}/.bash_profile \
+    && /home/linuxbrew/.linuxbrew/bin/brew shellenv >> ${HOME}/.bash_profile \
 	&& brew install mkcert \
 	&& mkcert -install
+
 cert.local.create:
 	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
 

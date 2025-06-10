@@ -358,6 +358,21 @@ services:
                 syslog-facility: "daemon"
                 tag: "logrotate"
 
+    prometheus:
+        image: prom/prometheus
+        container_name: prometheus
+        profiles: [ main ]
+        ports:
+            - "9090:9090"
+        volumes:
+            - ./config/prometheus:/etc/prometheus
+    grafana:
+        image: grafana/grafana
+        container_name: grafana
+        profiles: [ main ]
+        ports:
+            - "3000:3000"
+
 networks:
     net:
         #name: dockerNet
