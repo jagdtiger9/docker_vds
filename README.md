@@ -58,7 +58,7 @@ $ make init
 2. **Database**
 ```bash
 # Via local mysql client (check env DB_PORT_MAP param)
-$ mysql -h localhost --protocol=tcp -u root -p ithub_ru < database.sql
+$ mysql -h localhost --protocol=tcp -u root -p db_name < database.sql
 
 # Docker container import
 $ docker cp dump_<date>.sql db:/dump.sql
