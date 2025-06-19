@@ -214,7 +214,6 @@ services:
             - debug
         ports:
             - "8000:8000"
-            - "1025:1025"
             - "9912:9912"
             - "9913:9913"
         networks:
@@ -372,6 +371,29 @@ services:
         profiles: [ main ]
         ports:
             - "3000:3000"
+
+    sphinx:
+        build:
+            context: .
+            dockerfile: ./images/sphinx3/Dockerfile
+        container_name: sphinx
+        profiles: [ main ]
+        volumes:
+            - ${DATA_HOSTS}:/var/www
+        ports:
+            - 9312:9312
+            - 9306:9306
+        networks:
+            net:
+                ipv4_address: 192.168.17.22
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "sphinx"
+
 
 networks:
     net:
