@@ -18,7 +18,7 @@ RUN apt-get -y update \
     && install_clean php${PHP_VERSION} php-pear php${PHP_VERSION}-dev php${PHP_VERSION}-cli php${PHP_VERSION}-fpm php${PHP_VERSION}-curl php${PHP_VERSION}-gd php${PHP_VERSION}-gmp php${PHP_VERSION}-amqp \
     && install_clean php${PHP_VERSION}-apcu php${PHP_VERSION}-mysqlnd php${PHP_VERSION}-sqlite3 php${PHP_VERSION}-memcached php${PHP_VERSION}-memcache php${PHP_VERSION}-xdebug \
     && install_clean php${PHP_VERSION}-imagick php${PHP_VERSION}-imap php${PHP_VERSION}-bcmath php${PHP_VERSION}-xml php${PHP_VERSION}-mbstring  php${PHP_VERSION}-zip php${PHP_VERSION}-intl \
-    && install_clean sqlite3 unzip webp libwebp-dev libjpeg-dev libpng-dev libtiff-dev libgif-dev imagemagick libmagickcore-6.q16-6-extra \
+    && install_clean sqlite3 unzip webp libwebp-dev libjpeg-dev libpng-dev libtiff-dev libgif-dev librsvg2-dev imagemagick libmagickcore-6.q16-6-extra \
     && install_clean mysql-client git php-json curl make \
     && install_clean php-pear && pear channel-update pear.php.net && pecl install xhprof \
     && update-alternatives --set php /usr/bin/php${PHP_VERSION} \
