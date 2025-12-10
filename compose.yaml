@@ -194,8 +194,6 @@ services:
             - ${CONF_LOGGER}:/etc/logger/logger.ini
             - ${LOGGER_SERVICE_LOG}:/var/log/logger
             - ${LOGGER_CLIENT_LOG}:/var/logger
-        ports:
-            - "4535:4535"
         networks:
             - net
         restart: unless-stopped
@@ -324,9 +322,9 @@ services:
             - ${CONF_LOG}:/config/syslog-ng.conf
             - ${DATA_LOG}:/var/log #optional
         ports:
-            - "514:5514/udp"
-            - "601:6601/tcp"
-            - "6514:6514/tcp"
+            - "127.0.0.1:514:5514/udp"
+        #            - "601:6601/tcp"
+        #            - "6514:6514/tcp"
         networks:
             - net
         restart: unless-stopped
@@ -360,17 +358,80 @@ services:
     prometheus:
         image: prom/prometheus
         container_name: prometheus
-        profiles: [ main ]
-        ports:
-            - "9090:9090"
+        profiles: [ local ]
         volumes:
             - ./config/prometheus:/etc/prometheus
+            - ${DATA_PROMETHEUS}:/prometheus
+        command:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+            - '--storage.tsdb.retention.time=30d'
+            - '--web.console.libraries=/etc/prometheus/console_libraries'
+            - '--web.console.templates=/etc/prometheus/consoles'
+            - '--web.enable-lifecycle'
+        ports:
+            - "9090:9090"
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "prometheus"
+
+    node-exporter:
+        image: prom/node-exporter:latest
+        container_name: node-exporter
+        restart: unless-stopped
+        volumes:
+            - /proc:/host/proc:ro
+            - /sys:/host/sys:ro
+            - /:/rootfs:ro
+        command:
+            - '--path.procfs=/host/proc'
+            - '--path.rootfs=/rootfs'
+            - '--path.sysfs=/host/sys'
+            - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+        expose:
+            - 9100
+        networks:
+            - net
+
+    cadvisor:
+        image: gcr.io/cadvisor/cadvisor:v0.47.2
+        container_name: cadvisor
+        #ports:
+        #    - "8080:8080"
+        volumes:
+            - /:/rootfs:ro
+            - /var/run:/var/run:ro
+            - /sys:/sys:ro
+            - /var/lib/docker/:/var/lib/docker:ro
+            - /var/run/docker.sock:/var/run/docker.sock:ro  # Only needed on Docker Desktop for Mac
+        networks:
+            - net
+        restart: unless-stopped
+
     grafana:
         image: grafana/grafana
         container_name: grafana
-        profiles: [ main ]
-        ports:
-            - "3000:3000"
+        profiles: [ local ]
+        environment:
+            - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+        volumes:
+            - ${DATA_GRAFANA}:/var/lib/grafana
+            - ${CONF_GRAFANA}:/etc/grafana/grafana.ini
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "grafana"
 
     sphinx:
         build:
@@ -380,9 +441,6 @@ services:
         profiles: [ main ]
         volumes:
             - ${DATA_HOSTS}:/var/www
-        ports:
-            - 9312:9312
-            - 9306:9306
         networks:
             net:
                 ipv4_address: 192.168.17.22
@@ -403,3 +461,5 @@ networks:
             driver: default
             config:
                 -   subnet: 192.168.17.0/24
+    monitoring:
+        driver: bridge

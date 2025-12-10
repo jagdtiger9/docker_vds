@@ -41,9 +41,10 @@ define perms
     && mkdir -p -m 0777 ${DATA_LOG} \
     && mkdir -p -m 0777 ${LOGGER_SERVICE_LOG} \
     && mkdir -p -m 0777 ${LOGGER_CLIENT_LOG} \
-    && chmod u+s,g+s ${LOGGER_CLIENT_LOG} \
     && mkdir -p -m 0777 ${DATA_REDIS} \
     && mkdir -p -m 0777 ${DATA_RABBITMQ} \
+    && mkdir -p -m 0777 ${DATA_PROMETHEUS} \
+    && mkdir -p -m 0777 ${DATA_GRAFANA} \
     && mkdir -p -m 0777 ${CERTBOT_WEB} \
     && mkdir -p -m 0777 ${CERTBOT_SSL} \
     && mkdir -p -m 0777 ${CONF_HOSTS} \
@@ -75,13 +76,13 @@ certbot.renew:
 	docker compose run --rm certbot renew --webroot --webroot-path /var/www/certbot/
 certbot.renew.dry:
 	docker compose run --rm certbot renew --webroot --webroot-path /var/www/certbot/ --dry-run
+
 cert.local.install:
 	sudo apt install libnss3-tools \
 	&& curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash -\
     && /home/linuxbrew/.linuxbrew/bin/brew shellenv >> ${HOME}/.bash_profile \
 	&& brew install mkcert \
 	&& mkcert -install
-
 cert.local.create:
 	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
 

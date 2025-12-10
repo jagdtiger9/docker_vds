@@ -1,0 +1,44 @@
+server {
+	listen 80;
+	server_name grafana.local;
+
+	location / {
+		return 301 https://grafana.local$request_uri;
+	}
+}
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+	server_name grafana.local;
+
+    # copy certificates
+    ssl_certificate /etc/nginx/ssl/grafana.crt;
+    ssl_certificate_key /etc/nginx/ssl/grafana.key;
+
+	error_page 404 /e404;
+	client_max_body_size 300M;
+
+    resolver 127.0.0.11;
+    set $upstream http://grafana:3000;
+
+    location / {
+        proxy_pass $upstream;
+        rewrite ^/?(.*) /$1 break;
+        proxy_set_header Host $host;
+    }
+    # Proxy Grafana Live WebSocket connections.
+    location /api/live/ {
+        proxy_pass $upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_set_header Host $host;
+    }
+
+	location = /favicon.ico {
+		try_files /favicon.ico =204;
+	}
+}

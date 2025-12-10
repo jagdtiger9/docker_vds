@@ -3,7 +3,7 @@ LABEL org.opencontainers.image.authors="gimatov@gmail.com"
 
 ENV XDEBUG_PORT=${XDEBUG_PORT:-9001}
 ENV COMPOSER_HOME=/var/www
-ENV PHP_VERSION=8.4
+ENV PHP_VERSION=8.5
 ENV USER=${USER:-1000}
 ENV GROUP=${GROUP:-1000}
 
@@ -47,7 +47,6 @@ RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
 RUN curl -sL https://getcomposer.org/installer | php \
     && cp composer.phar /usr/local/bin/composer
 
-#RUN apt-get remove -y make
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
