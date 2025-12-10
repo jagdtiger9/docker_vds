@@ -26,9 +26,8 @@ services:
             # WS HTTP/S INFO PORT
             - "8085:8085"
             - "8485:8485"
-            # WS PORT
+            # WS/WSS PORT
             - "8033:8033"
-            # WSS PORT
             - "8433:8433"
         networks:
             - net
@@ -154,7 +153,7 @@ services:
             - ${DATA_MYSQL}:/var/lib/mysql
             - ${CONF_MYSQL}:/etc/my.cnf.d:ro
         ports:
-            - "${DB_PORT_MAP:-65001:65001}"
+            - "${DB_PORT_MAP:-127.0.0.1:65001:65001}"
         networks:
             net:
                 ipv4_address: 192.168.17.33
@@ -204,31 +203,6 @@ services:
                 syslog-facility: "daemon"
                 tag: "logger"
 
-
-    buggregator:
-        image: ghcr.io/buggregator/server:latest
-        container_name: buggregator
-        profiles:
-            - debug
-        ports:
-            - "8000:8000"
-            - "9912:9912"
-            - "9913:9913"
-        networks:
-            - net
-        environment:
-            MYSQL_USERNAME: root
-            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-            UPLOAD_LIMIT: ${UPLOAD_LIMIT}
-            PMA_HOST: ${PMA_HOST}
-        restart: unless-stopped
-        logging:
-            driver: "syslog"
-            options:
-                syslog-address: "udp://127.0.0.1:514"
-                syslog-facility: "daemon"
-                tag: "buggregator"
-
     memcached:
         image: memcached
         container_name: memcached
@@ -273,9 +247,6 @@ services:
             - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,info}] disk_free_limit ${RABBITMQ_LIMIT}
         volumes:
             - ${DATA_RABBITMQ}:/var/lib/rabbitmq
-        ports:
-            - "15672:15672"
-            - "5672:5672"
         networks:
             - net
         restart: unless-stopped
@@ -309,6 +280,25 @@ services:
                 syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
                 tag: "nodejs"
+
+    sphinx:
+        build:
+            context: .
+            dockerfile: ./images/sphinx3/Dockerfile
+        container_name: sphinx
+        profiles: [ main ]
+        volumes:
+            - ${DATA_HOSTS}:/var/www
+        networks:
+            net:
+                ipv4_address: 192.168.17.22
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "sphinx"
 
     syslog:
         image: lscr.io/linuxserver/syslog-ng:latest
@@ -370,7 +360,7 @@ services:
             - '--web.console.templates=/etc/prometheus/consoles'
             - '--web.enable-lifecycle'
         ports:
-            - "9090:9090"
+            - "127.0.0.1:9090:9090"
         networks:
             - net
         restart: unless-stopped
@@ -402,13 +392,12 @@ services:
     cadvisor:
         image: gcr.io/cadvisor/cadvisor:v0.47.2
         container_name: cadvisor
-        #ports:
-        #    - "8080:8080"
         volumes:
             - /:/rootfs:ro
             - /var/run:/var/run:ro
             - /sys:/sys:ro
             - /var/lib/docker/:/var/lib/docker:ro
+            - /dev/disk/:/dev/disk:ro
             - /var/run/docker.sock:/var/run/docker.sock:ro  # Only needed on Docker Desktop for Mac
         networks:
             - net
@@ -433,25 +422,29 @@ services:
                 syslog-facility: "daemon"
                 tag: "grafana"
 
-    sphinx:
-        build:
-            context: .
-            dockerfile: ./images/sphinx3/Dockerfile
-        container_name: sphinx
-        profiles: [ main ]
-        volumes:
-            - ${DATA_HOSTS}:/var/www
+    buggregator:
+        image: ghcr.io/buggregator/server:latest
+        container_name: buggregator
+        profiles:
+            - debug
+        ports:
+            - "8000:8000"
+            - "9912:9912"
+            - "9913:9913"
         networks:
-            net:
-                ipv4_address: 192.168.17.22
+            - net
+        environment:
+            MYSQL_USERNAME: root
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            UPLOAD_LIMIT: ${UPLOAD_LIMIT}
+            PMA_HOST: ${PMA_HOST}
         restart: unless-stopped
         logging:
             driver: "syslog"
             options:
                 syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
-                tag: "sphinx"
-
+                tag: "buggregator"
 
 networks:
     net:
