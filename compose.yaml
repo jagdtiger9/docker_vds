@@ -8,27 +8,21 @@ volumes:
     nodejs:
 
 services:
-    nginx:
+    # Helper service, must not be run
+    nginx_base:
         image: nginx:alpine
-        container_name: nginx
-        profiles: [ main ]
+        profiles: [ _helper_service ]
         volumes:
             - ${CONF_NGINX}:/etc/nginx/nginx.conf
             - ${CONF_HOSTS}:/etc/nginx/conf.d:ro
             - ${DATA_HOSTS}:/var/www
             - ${CERTBOT_WEB}:/var/www/certbot/:ro
             - ${CERTBOT_SSL}:/etc/nginx/ssl/:ro
-        entrypoint: /bin/sh
-        command: -c 'while :; do sleep 6h && wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'
         ports:
             - "80:80"
             - "443:443"
-            # WS HTTP/S INFO PORT
-            - "8085:8085"
-            - "8485:8485"
-            # WS/WSS PORT
-            - "8033:8033"
-            - "8433:8433"
+        entrypoint: /bin/sh
+        command: -c 'while :; do sleep 6h && wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'
         networks:
             - net
         restart: unless-stopped
@@ -38,6 +32,27 @@ services:
                 syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
                 tag: "nginx"
+
+    # Nginx service with websockets on
+    nginx_ws:
+        container_name: nginx
+        profiles: [ nginx_ws ]
+        extends:
+            service: nginx_base
+        ports:
+            # WS HTTP/S INFO PORT
+            - "8085:8085"
+            - "8485:8485"
+            # WS/WSS PORT
+            - "8033:8033"
+            - "8433:8433"
+
+    # Nginx service with websockets off
+    nginx:
+        container_name: nginx
+        profiles: [ nginx ]
+        extends:
+            service: nginx_base
 
     #https://mindsers.blog/en/post/https-using-nginx-certbot-docker/
     certbot:
@@ -355,7 +370,7 @@ services:
         command:
             - '--config.file=/etc/prometheus/prometheus.yml'
             - '--storage.tsdb.path=/prometheus'
-            - '--storage.tsdb.retention.time=30d'
+            - '--storage.tsdb.retention.time=7d'
             - '--web.console.libraries=/etc/prometheus/console_libraries'
             - '--web.console.templates=/etc/prometheus/consoles'
             - '--web.enable-lifecycle'
