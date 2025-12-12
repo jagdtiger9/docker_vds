@@ -276,7 +276,7 @@ services:
         build:
             context: ./images/nodejs
         container_name: nodejs
-        profiles: [ websockets ]
+        profiles: [ nginx_ws ]
         user: ${UID:-1000}:${GID:-1000}
         environment:
             - WS_PORT=${WS_PORT:-1333}
@@ -363,7 +363,7 @@ services:
     prometheus:
         image: prom/prometheus:latest
         container_name: prometheus
-        profiles: [ local ]
+        profiles: [ metrics ]
         volumes:
             - ./config/prometheus:/etc/prometheus
             - ${DATA_PROMETHEUS}:/prometheus
@@ -389,6 +389,7 @@ services:
     node-exporter:
         image: prom/node-exporter:latest
         container_name: node-exporter
+        profiles: [ metrics ]
         volumes:
             - /proc:/host/proc:ro
             - /sys:/host/sys:ro
@@ -413,6 +414,7 @@ services:
     nginx-exporter:
         image: nginx/nginx-prometheus-exporter
         container_name: nginx-exporter
+        profiles: [ metrics ]
         command:
             - '--nginx.scrape-uri=http://nginx:8099/stub_status'
         expose:
@@ -430,6 +432,7 @@ services:
     mysql-exporter:
         image: prom/mysqld-exporter:latest
         container_name: mysqld-exporter
+        profiles: [ metrics ]
         volumes:
             - ${CONF_MYSQL_EXPORTER}:/config/.my.cnf
         command:
@@ -450,6 +453,7 @@ services:
     cadvisor:
         image: gcr.io/cadvisor/cadvisor:v0.52.0
         container_name: cadvisor
+        profiles: [ metrics ]
         volumes:
             - /:/rootfs:ro
             - /var/run:/var/run:ro
@@ -472,7 +476,7 @@ services:
     grafana:
         image: grafana/grafana
         container_name: grafana
-        profiles: [ local ]
+        profiles: [ metrics ]
         environment:
             - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
         volumes:
