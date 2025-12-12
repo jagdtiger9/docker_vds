@@ -167,6 +167,7 @@ services:
         volumes:
             - ${DATA_MYSQL}:/var/lib/mysql
             - ${CONF_MYSQL}:/etc/my.cnf.d:ro
+            - ${DATA_LOG}:/var/log
         ports:
             - "${DB_PORT_MAP:-127.0.0.1:65001:65001}"
         networks:
@@ -187,7 +188,7 @@ services:
     phpmyadmin:
         image: phpmyadmin/phpmyadmin
         container_name: phpmyadmin
-        profiles: [ debug ]
+        profiles: [ pma ]
         ports:
             - "${PMA_PORT_MAP:-8081:80}"
         networks:
@@ -203,7 +204,7 @@ services:
         #image: logger/logger:dev
         image: lg.gpmradio.ru:5050/web/logger/logger/logger:dev
         container_name: logger
-        profiles: [ local ]
+        profiles: [ logger ]
         volumes:
             - ${CONF_LOGGER}:/etc/logger/logger.ini
             - ${LOGGER_SERVICE_LOG}:/var/log/logger
@@ -438,6 +439,7 @@ services:
         command:
             - '--config.my-cnf=/config/.my.cnf'
             - '--mysqld.address=db:3306'
+            - '--exporter.log_slow_filter'
         environment:
             MYSQLD_EXPORTER_PASSWORD: ${MYSQL_EXPORTER_PASSWORD}
         expose:
