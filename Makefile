@@ -66,6 +66,8 @@ new.host:
 	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
 nginx.reload:
 	docker compose exec nginx nginx -s reload
+nginx_ws.reload:
+	docker compose exec nginx_ws nginx -s reload
 certbot.create:
 	docker compose run --rm certbot certonly --keep --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
 certbot.delete:

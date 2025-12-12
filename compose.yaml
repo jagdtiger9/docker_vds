@@ -438,6 +438,8 @@ services:
         command:
             - '--config.my-cnf=/config/.my.cnf'
             - '--mysqld.address=db:3306'
+        environment:
+            MYSQLD_EXPORTER_PASSWORD: ${MYSQL_EXPORTER_PASSWORD}
         expose:
             - 9104
         networks:
@@ -462,7 +464,7 @@ services:
             - /dev/disk/:/dev/disk:ro
             - /var/run/docker.sock:/var/run/docker.sock:ro  # Only needed on Docker Desktop for Mac
         expose:
-            -   8080
+            - 8080
         networks:
             - net
         restart: unless-stopped

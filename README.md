@@ -56,6 +56,7 @@ $ make init
 Конфиги nginx в директорию CONF_HOSTS
 
 2. **Database**
+
 ```bash
 # Via local mysql client (check env DB_PORT_MAP param)
 $ mysql -h localhost --protocol=tcp -u root -p db_name < database.sql
@@ -166,5 +167,21 @@ $ make cert.local DOMAIN=magicpro.local
 # Копируем созданные сертификаты в директорию CERTBOT_SSL(.env):
 $ cp ./../.cert/ ./data/letsencrypt/
 ```
+
 https://github.com/FiloSottile/mkcert
 
+## Мониторинг
+
+Grafana dashboards:
+
+- 1860
+- 14900
+- 8321
+- 16310
+
+### mysql-exporter database user
+
+```
+CREATE USER 'exporter'@'localhost' IDENTIFIED BY 'password' WITH MAX_USER_CONNECTIONS 3;
+GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'exporter'@'localhost';
+```
