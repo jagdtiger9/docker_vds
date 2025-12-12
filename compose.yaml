@@ -478,6 +478,7 @@ services:
         container_name: grafana
         profiles: [ metrics ]
         environment:
+            - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
             - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
         volumes:
             - ${DATA_GRAFANA}:/var/lib/grafana
