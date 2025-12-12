@@ -167,7 +167,7 @@ services:
         volumes:
             - ${DATA_MYSQL}:/var/lib/mysql
             - ${CONF_MYSQL}:/etc/my.cnf.d:ro
-            - ${DATA_LOG}:/var/log
+            - ${DATA_LOG}:/var/log/mysql
         ports:
             - "${DB_PORT_MAP:-127.0.0.1:65001:65001}"
         networks:
