@@ -361,7 +361,7 @@ services:
                 tag: "logrotate"
 
     prometheus:
-        image: prom/prometheus
+        image: prom/prometheus:latest
         container_name: prometheus
         profiles: [ local ]
         volumes:
@@ -389,7 +389,6 @@ services:
     node-exporter:
         image: prom/node-exporter:latest
         container_name: node-exporter
-        restart: unless-stopped
         volumes:
             - /proc:/host/proc:ro
             - /sys:/host/sys:ro
@@ -403,9 +402,53 @@ services:
             - 9100
         networks:
             - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "node-exporter"
+
+    nginx-exporter:
+        image: nginx/nginx-prometheus-exporter
+        container_name: nginx-exporter
+        command:
+            - '--nginx.scrape-uri=http://nginx:8099/stub_status'
+        expose:
+            - 9113
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "nginx-exporter"
+
+    mysql-exporter:
+        image: prom/mysqld-exporter:latest
+        container_name: mysqld-exporter
+        volumes:
+            - ${CONF_MYSQL_EXPORTER}:/config/.my.cnf
+        command:
+            - '--config.my-cnf=/config/.my.cnf'
+            - '--mysqld.address=db:3306'
+        expose:
+            - 9104
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "mysqld-exporter"
 
     cadvisor:
-        image: gcr.io/cadvisor/cadvisor:v0.47.2
+        image: gcr.io/cadvisor/cadvisor:v0.52.0
         container_name: cadvisor
         volumes:
             - /:/rootfs:ro
@@ -414,9 +457,17 @@ services:
             - /var/lib/docker/:/var/lib/docker:ro
             - /dev/disk/:/dev/disk:ro
             - /var/run/docker.sock:/var/run/docker.sock:ro  # Only needed on Docker Desktop for Mac
+        expose:
+            -   8080
         networks:
             - net
         restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "cadvisor"
 
     grafana:
         image: grafana/grafana

@@ -12,6 +12,12 @@ interactive_timeout=3600
 wait_timeout=3600
 max_allowed_packet=32M
 
+slow_query_log=ON
+#slow_query_log_file=/var/lib/mysql/slow.log
+#slow_query_log_file=/dev/stdout
+long_query_time=2
+log_queries_not_using_indexes=ON
+
 port            = 3306
 socket          = /tmp/mysql.sock
 skip-external-locking
@@ -49,7 +55,7 @@ max_connect_errors = 10000000
 #skip-networking
 
 # --- REPLICATION BLOCK ---
-# Master-slave replication settigs
+# Master-slave replication settings
 # For MySQL=>Tarantool replication
 binlog_format = ROW
 performance_schema=ON

@@ -67,6 +67,12 @@ $ docker exec -ti db mysql -u root -p
 > source /dump.sql;
 ```
 
+```
+SET global general_log = on;
+SET global general_log_file='/var/log/mysql/mysql.log';
+SET global log_output = 'file'; 
+```
+
 3. **Cron**
 
 Для каждого проекта добавляем задачу в созданный после первого запуска файл CONF_CRON
