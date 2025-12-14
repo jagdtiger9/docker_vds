@@ -466,9 +466,9 @@ services:
             - /dev/disk/:/dev/disk:ro
             - /var/run/docker.sock:/var/run/docker.sock:ro  # Only needed on Docker Desktop for Mac
         command:
-            - '--housekeeping_interval=15s'
+            - '--housekeeping_interval=10s'
             - '--docker_only=true'
-            - '--disable_metrics=disk,network,tcp,udp,percpu,sched,process'
+#            - '--disable_metrics=disk,network,tcp,udp,percpu,sched,process'
         expose:
             - 8080
         networks:
