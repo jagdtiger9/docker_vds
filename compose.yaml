@@ -465,6 +465,9 @@ services:
             - /var/lib/docker/:/var/lib/docker:ro
             - /dev/disk/:/dev/disk:ro
             - /var/run/docker.sock:/var/run/docker.sock:ro  # Only needed on Docker Desktop for Mac
+        command:
+            - '--housekeeping_interval=5s'
+            - '--docker_only'
         expose:
             - 8080
         networks:
