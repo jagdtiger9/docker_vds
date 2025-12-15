@@ -45,6 +45,15 @@ scrape_configs:
                 # The mysqld-exporter host:port
                 replacement: mysqld-exporter:9104
 
+    - job_name: 'rabbitmq-exporter'
+      scrape_interval: 30s
+      scrape_timeout: 29s
+      static_configs:
+          - targets:
+                # docker exec -it rabbitmq rabbitmq-plugins list | grep mqtt
+                # docker exec -it rabbitmq rabbitmq-plugins enable rabbitmq_mqtt
+                - 'rabbitmq:15692'
+
     #    -   job_name: 'legacy_metrics'
     #        metrics_path: /legacy/metrics
     #        static_configs:
