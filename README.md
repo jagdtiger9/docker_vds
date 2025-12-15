@@ -178,6 +178,7 @@ Grafana dashboards:
 - 14900
 - 8321
 - 16310
+- 10991 (RabbitMW)
 
 ### mysql-exporter database user
 

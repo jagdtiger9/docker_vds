@@ -57,17 +57,17 @@ endef
 # Добавление нового хоста
 # make new.host.https HOST="host.domain"
 new.host.https:
-	cp ./config/nginx/hosts/default.host.conf_https ${CONF_HOSTS}${HOST}.conf \
+	cp ./config/${PROXY_SERVER}/hosts/default.host.conf_https ${CONF_HOSTS}${HOST}.conf \
 	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
 # Добавление нового хоста на локальной машине без поддержки SSL
 # make new.host HOST="host"
 new.host:
-	cp ./config/nginx/hosts/default.host.conf_http ${CONF_HOSTS}${HOST}.conf \
+	cp ./config/${PROXY_SERVER}/hosts/default.host.conf_http ${CONF_HOSTS}${HOST}.conf \
 	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
 nginx.reload:
-	docker compose exec nginx nginx -s reload
+	docker compose exec proxy ${PROXY_SERVER} -s reload
 nginx_ws.reload:
-	docker compose exec nginx_ws nginx -s reload
+	docker compose exec proxy_ws ${PROXY_SERVER} -s reload
 certbot.create:
 	docker compose run --rm certbot certonly --keep --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
 certbot.delete:
