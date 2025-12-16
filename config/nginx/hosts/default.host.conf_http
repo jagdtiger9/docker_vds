@@ -5,6 +5,8 @@ server {
 	index index.php index.html;
 	server_name [DOMAIN_NAME];
 	#disable_symlinks off;
+	# Angie only
+    #status_zone [DOMAIN_NAME];
 
 	location / {
 		# try to serve file directly, fallback to /index.php

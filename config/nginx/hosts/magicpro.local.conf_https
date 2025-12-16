@@ -15,6 +15,8 @@ server {
 	root /var/www/magicpro/public;
 	index index.php index.html;
 	server_name magicpro.local;
+	# Angie only
+    #status_zone magicpro;
 
     # copy certificates
     ssl_certificate /etc/nginx/ssl/magicpro.crt;

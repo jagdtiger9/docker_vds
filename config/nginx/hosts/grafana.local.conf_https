@@ -13,6 +13,8 @@ server {
     root /usr/share/nginx/html;
     index index.html index.htm;
 	server_name grafana.local;
+	# Angie only
+	#status_zone grafana;
 
     # copy certificates
     ssl_certificate /etc/nginx/ssl/grafana.crt;
