@@ -61,6 +61,7 @@ scrape_configs:
                     # docker exec -it rabbitmq rabbitmq-plugins enable rabbitmq_mqtt
                     - 'rabbitmq:15692'
 
-    #    -   job_name: 'log_based_metrics'
-    #        static_configs:
-    #            -   targets: [ 'mtail:3903' ]
+    -   job_name: 'redis-exporter'
+        static_configs:
+            -   targets:
+                    - 'redis-exporter:9121'

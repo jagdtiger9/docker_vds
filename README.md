@@ -175,8 +175,9 @@ https://github.com/FiloSottile/mkcert
 Grafana dashboards:
 
 - 1860 (Node exporter)
-- 4271, 395, 10566 (Docker cadvisor) 
+- 395, 10566 (Docker cadvisor) 
 - 14057 (Mysql)
+- 14091 (Redis)
 - 10991 (RabbitMQ)
 - 20719 (Angie)
 - 14900 (Nginx)

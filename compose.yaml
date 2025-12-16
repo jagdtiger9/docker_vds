@@ -480,6 +480,24 @@ services:
                 syslog-facility: "daemon"
                 tag: "mysqld-exporter"
 
+    redis-exporter:
+        image: oliver006/redis_exporter
+        container_name: redis-exporter
+        profiles: [ metrics ]
+        command:
+            - '--redis.addr=redis://redis:6379'
+        expose:
+            - 9121
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "redis-exporter"
+
     cadvisor:
         image: gcr.io/cadvisor/cadvisor:v0.52.0
         container_name: cadvisor
