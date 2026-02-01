@@ -1,5 +1,5 @@
 FROM node:18-alpine
-MAINTAINER gimatov@gmail.com
+LABEL org.opencontainers.image.authors="gimatov@gmail.com"m
 
 RUN apk add --no-cache curl git \
     && corepack enable \

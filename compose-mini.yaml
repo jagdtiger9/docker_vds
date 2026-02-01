@@ -8,34 +8,10 @@ volumes:
     nodejs:
 
 services:
-    # Helper service, must not be run
-    nginx:
-        image: nginx:alpine
-        profiles: [ _helper_service ]
-        volumes:
-            - ${CONF_NGINX}:/etc/nginx/nginx.conf
-            - ${CONF_HOSTS}:/etc/nginx/conf.d:ro
-            - ${DATA_HOSTS}:/var/www
-            - ${CERTBOT_WEB}:/var/www/certbot/:ro
-            - ${CERTBOT_SSL}:/etc/nginx/ssl/:ro
-        ports:
-            - "80:80"
-            - "443:443"
-        entrypoint: /bin/sh
-        command: -c 'while :; do sleep 6h && wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'
-        networks:
-            - net
-        restart: unless-stopped
-        logging:
-            driver: "syslog"
-            options:
-                syslog-address: "udp://127.0.0.1:514"
-                syslog-facility: "daemon"
-                tag: "nginx"
-
-    angie:
+    proxy:
         image: docker.angie.software/angie:latest
-        profiles: [ _helper_service ]
+        container_name: proxy
+        profiles: [ proxy ]
         volumes:
             - ./config/nginx/default_host/:/usr/share/nginx/html/
             - ${CONF_ANGIE}:/etc/angie/angie.conf
@@ -58,27 +34,6 @@ services:
                 syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
                 tag: "angie"
-
-    # Nginx service with websockets on
-    proxy_ws:
-        container_name: proxy
-        profiles: [ proxy_ws ]
-        extends:
-            service: ${PROXY_SERVER:-nginx}
-        ports:
-            # WS HTTP/S INFO PORT
-            - "8085:8085"
-            - "8485:8485"
-            # WS/WSS PORT
-            - "8033:8033"
-            - "8433:8433"
-
-    # Nginx service with websockets off
-    proxy:
-        container_name: proxy
-        profiles: [ proxy ]
-        extends:
-            service: ${PROXY_SERVER:-angie}
 
     #https://mindsers.blog/en/post/https-using-nginx-certbot-docker/
     certbot:
@@ -111,16 +66,14 @@ services:
         environment:
             # service container environment
             - PHP_VERSION=${PHP_VERSION:-8.3}
-            - FPM_LOG_LEVEL=${FPM_LOG_LEVEL:-warning}
             - XDEBUG_HOST=${XDEBUG_HOST:-127.0.0.1}
             - XDEBUG_PORT=${XDEBUG_PORT:-9001}
             - UID=${UID:-1000}
             - GID=${GID:-1000}
-            - WEB_UID=${WEB_UID:-33}
-            - WEB_GID=${WEB_GID:-33}
         volumes:
             - ${DATA_HOSTS}:/var/www
             - ${DATA_XDEBUG}:/tmp/xdebug
+        #entrypoint: [ "/entrypoint.sh" ]
         networks:
             - net
         restart: unless-stopped
@@ -175,7 +128,7 @@ services:
             - /etc/group:/etc/group
             - ${DATA_HOSTS}:/var/www
             - ${CONF_WORKER}:/etc/supervisor/conf.d/
-        command: [ '/usr/bin/supervisord', '--nodaemon', '-c', '/etc/supervisord.conf' ]
+        command: [ '/usr/bin/supervisord', '-c', '/etc/supervisor/supervisord.conf' ]
         #        depends_on:
         #            db:
         #                condition: service_healthy
@@ -228,46 +181,6 @@ services:
             UPLOAD_LIMIT: ${UPLOAD_LIMIT}
             PMA_HOST: ${PMA_HOST}
         restart: unless-stopped
-
-    logger:
-        #image: logger/logger:dev
-        image: lg.gpmradio.ru:5050/web/logger/logger/logger:dev
-        container_name: logger
-        profiles: [ logger ]
-        volumes:
-            - ${CONF_LOGGER}:/etc/logger/logger.ini
-            - ${LOGGER_SERVICE_LOG}:/var/log/logger
-            - ${LOGGER_CLIENT_LOG}:/var/logger
-        networks:
-            - net
-        restart: unless-stopped
-        logging:
-            driver: "syslog"
-            options:
-                syslog-address: "udp://127.0.0.1:514"
-                syslog-facility: "daemon"
-                tag: "logger"
-
-    musicGo:
-        image: lg.gpmradio.ru:5050/web/logger/logger/logger:dev
-        #        build:
-        #            context: .
-        #            dockerfile: ./images/musicGo/Dockerfile
-        container_name: musicGo
-        profiles: [ custom_101 ]
-        volumes:
-            - ${CONF_LOGGER}:/etc/logger/logger.ini
-            - ${LOGGER_SERVICE_LOG}:/var/log/logger
-            - ${LOGGER_CLIENT_LOG}:/var/logger
-        networks:
-            net:
-        restart: unless-stopped
-        logging:
-            driver: "syslog"
-            options:
-                syslog-address: "udp://127.0.0.1:514"
-                syslog-facility: "daemon"
-                tag: "musicGo"
 
     memcached:
         image: memcached
@@ -409,167 +322,6 @@ services:
                 syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
                 tag: "logrotate"
-
-    prometheus:
-        image: prom/prometheus:latest
-        container_name: prometheus
-        profiles: [ metrics ]
-        volumes:
-            - ./config/prometheus:/etc/prometheus
-            - ${DATA_PROMETHEUS}:/prometheus
-        command:
-            - '--config.file=/etc/prometheus/prometheus.yml'
-            - '--storage.tsdb.path=/prometheus'
-            - '--storage.tsdb.retention.time=7d'
-            - '--web.console.libraries=/etc/prometheus/console_libraries'
-            - '--web.console.templates=/etc/prometheus/consoles'
-            - '--web.enable-lifecycle'
-        ports:
-            - "127.0.0.1:9090:9090"
-        networks:
-            - net
-        restart: unless-stopped
-        logging:
-            driver: "syslog"
-            options:
-                syslog-address: "udp://127.0.0.1:514"
-                syslog-facility: "daemon"
-                tag: "prometheus"
-
-    node-exporter:
-        image: prom/node-exporter:latest
-        container_name: node-exporter
-        profiles: [ metrics ]
-        volumes:
-            - /proc:/host/proc:ro
-            - /sys:/host/sys:ro
-            - /:/rootfs:ro
-        command:
-            - '--path.procfs=/host/proc'
-            - '--path.rootfs=/rootfs'
-            - '--path.sysfs=/host/sys'
-            - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-        expose:
-            - 9100
-        networks:
-            - net
-        restart: unless-stopped
-        logging:
-            driver: "syslog"
-            options:
-                syslog-address: "udp://127.0.0.1:514"
-                syslog-facility: "daemon"
-                tag: "node-exporter"
-
-    nginx-exporter:
-        image: nginx/nginx-prometheus-exporter
-        container_name: nginx-exporter
-        profiles: [ metrics ]
-        command:
-            - '--nginx.scrape-uri=http://proxy:8099/stub_status'
-        expose:
-            - 9113
-        networks:
-            - net
-        restart: unless-stopped
-        logging:
-            driver: "syslog"
-            options:
-                syslog-address: "udp://127.0.0.1:514"
-                syslog-facility: "daemon"
-                tag: "nginx-exporter"
-
-    mysql-exporter:
-        image: prom/mysqld-exporter:latest
-        container_name: mysqld-exporter
-        profiles: [ metrics ]
-        volumes:
-            - ${CONF_MYSQL_EXPORTER}:/config/.my.cnf
-        command:
-            - '--config.my-cnf=/config/.my.cnf'
-            - '--mysqld.address=db:3306'
-            - '--exporter.log_slow_filter'
-        environment:
-            MYSQLD_EXPORTER_PASSWORD: ${MYSQL_EXPORTER_PASSWORD}
-        expose:
-            - 9104
-        networks:
-            - net
-        restart: unless-stopped
-        logging:
-            driver: "syslog"
-            options:
-                syslog-address: "udp://127.0.0.1:514"
-                syslog-facility: "daemon"
-                tag: "mysqld-exporter"
-
-    redis-exporter:
-        image: oliver006/redis_exporter
-        container_name: redis-exporter
-        profiles: [ metrics ]
-        command:
-            - '--redis.addr=redis://redis:6379'
-        expose:
-            - 9121
-        networks:
-            - net
-        restart: unless-stopped
-        logging:
-            driver: "syslog"
-            options:
-                syslog-address: "udp://127.0.0.1:514"
-                syslog-facility: "daemon"
-                tag: "redis-exporter"
-
-    cadvisor:
-        image: gcr.io/cadvisor/cadvisor:v0.52.0
-        container_name: cadvisor
-        profiles: [ metrics ]
-        volumes:
-            - /:/rootfs:ro
-            - /var/run:/var/run:ro
-            - /sys:/sys:ro
-            - /var/lib/docker/:/var/lib/docker:ro
-            - /dev/disk/:/dev/disk:ro
-            #- /var/run/docker.sock:/var/run/docker.sock:ro  # Only needed on Docker Desktop for Mac
-        command:
-            - '--housekeeping_interval=15s'
-            - '--docker_only=true'
-            - '--disable_metrics=disk,network,tcp,udp,percpu,sched,process'
-        expose:
-            - 8080
-        networks:
-            - net
-        restart: unless-stopped
-        logging:
-            driver: "syslog"
-            options:
-                syslog-address: "udp://127.0.0.1:514"
-                syslog-facility: "daemon"
-                tag: "cadvisor"
-
-    grafana:
-        image: grafana/grafana
-        container_name: grafana
-        profiles: [ metrics ]
-        user: "472"  # Grafana's built-in user
-        environment:
-            - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
-            - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
-            - GF_USERS_ALLOW_SIGN_UP=false
-            - GF_AUTH_ANONYMOUS_ENABLED=false
-        volumes:
-            - ${DATA_GRAFANA}:/var/lib/grafana
-            - ${CONF_GRAFANA}:/etc/grafana/grafana.ini
-        networks:
-            - net
-        restart: unless-stopped
-        logging:
-            driver: "syslog"
-            options:
-                syslog-address: "udp://127.0.0.1:514"
-                syslog-facility: "daemon"
-                tag: "grafana"
 
     buggregator:
         image: ghcr.io/buggregator/server:latest

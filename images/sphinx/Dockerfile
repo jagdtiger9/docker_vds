@@ -1,5 +1,5 @@
 FROM phusion/baseimage:jammy-1.0.1
-MAINTAINER gimatov@gmail.com
+LABEL org.opencontainers.image.authors="gimatov@gmail.com"
 
 RUN apt-get -y update \
     && apt-get install -y sphinxsearch \

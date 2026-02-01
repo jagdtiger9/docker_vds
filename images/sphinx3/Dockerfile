@@ -1,5 +1,5 @@
 FROM phusion/baseimage:noble-1.0.2
-MAINTAINER gimatov@gmail.com
+LABEL org.opencontainers.image.authors="gimatov@gmail.com"
 
 #    && wget -O sphinx_latest https://sphx.org/files/sphinx-3.4.1-efbcc65-linux-amd64.tar.gz \
 
