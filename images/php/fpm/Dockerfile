@@ -19,8 +19,13 @@ RUN echo "php_version: $php_version"
 COPY ./config/fpm/php-fpm.conf ${php_fpm_path}
 COPY ./config/fpm/www.conf ${www_conf_path}
 
-#RUN if [ "$allow_xdebug" = "0" ]; then phpdismod xdebug; fi
-RUN if [ "$allow_xdebug" = "1" ]; then install-php-extensions xdebug; fi
+RUN if [ "$allow_xdebug" = "1" ]; then \
+        curl -sSLf -o /usr/local/bin/install-php-extensions \
+            https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions \
+        && chmod +x /usr/local/bin/install-php-extensions \
+        && (install-php-extensions xdebug || true) \
+        && rm /usr/local/bin/install-php-extensions; \
+    fi
 
 EXPOSE 9000
 

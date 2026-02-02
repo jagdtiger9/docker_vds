@@ -112,8 +112,6 @@ services:
             # service container environment
             - PHP_VERSION=${PHP_VERSION:-8.3}
             - FPM_LOG_LEVEL=${FPM_LOG_LEVEL:-warning}
-            - XDEBUG_HOST=${XDEBUG_HOST:-127.0.0.1}
-            - XDEBUG_PORT=${XDEBUG_PORT:-9001}
             - UID=${UID:-1000}
             - GID=${GID:-1000}
             - WEB_UID=${WEB_UID:-33}
@@ -121,6 +119,8 @@ services:
         volumes:
             - ${DATA_HOSTS}:/var/www
             - ${DATA_XDEBUG}:/tmp/xdebug
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         networks:
             - net
         restart: unless-stopped
@@ -142,7 +142,6 @@ services:
         profiles: [ main ]
         environment:
             PHP_VERSION: ${PHP_VERSION:-8.3}
-            XDEBUG_PORT: ${XDEBUG_PORT:-9001}
         volumes:
             - ${DATA_HOSTS}:/var/www
             - ${DATA_XDEBUG}:/tmp/xdebug
@@ -168,7 +167,6 @@ services:
         profiles: [ main ]
         environment:
             PHP_VERSION: ${PHP_VERSION:-8.3}
-            XDEBUG_PORT: ${XDEBUG_PORT:-9001}
             USER: ${UID:-0}
         volumes:
             - /etc/passwd:/etc/passwd
