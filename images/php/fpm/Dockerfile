@@ -1,4 +1,5 @@
 ARG php_version
+
 FROM jagdtiger/php-dev-env-git:php${php_version}
 LABEL org.opencontainers.image.authors="gimatov@gmail.com"
 
@@ -24,6 +25,5 @@ RUN if [ "$allow_xdebug" = "1" ]; then install-php-extensions xdebug; fi
 EXPOSE 9000
 
 COPY --chmod=755 ./images/php/fpm/entrypoint.sh /entrypoint.sh
-#RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["php-fpm"]

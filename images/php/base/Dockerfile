@@ -30,7 +30,6 @@ RUN apk add --no-cache \
     make \
     sqlite \
     nodejs \
-    npm \
     yarn
 
 # Install PHP core extensions and PECL extensions in single layer
@@ -95,6 +94,8 @@ RUN set -eux; \
         redis \
         igbinary \
         xhprof \
+    ; \
+    ln -s /usr/local/bin/php /usr/bin/php \
     ; \
 # Rotator
 #COPY conf/xdebug.ini conf/rotator_8.tgz* /tmp

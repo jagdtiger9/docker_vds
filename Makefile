@@ -101,6 +101,11 @@ run.cmd:
 #  См. readme
 init:
 	docker compose exec ${SERVICE} /bin/bash -c 'groupadd --gid ${GID} gr${GID}; useradd --shell /bin/bash --uid ${UID} --gid ${GID} -m u${UID}'
+prune:
+	docker image prune -a
+web-user-create:
+	getent group web-group || sudo groupadd --gid ${WEB_GID} web-group \
+		&& getent passwd web-user || sudo useradd --shell /bin/bash --uid ${WEB_UID} --gid ${WEB_GID} -m web-user
 
 # Подключение-отключение phpmyadmin на продакшн
 up.pma:

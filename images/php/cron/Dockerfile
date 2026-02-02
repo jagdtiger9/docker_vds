@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.authors="gimatov@gmail.com"
 
 ARG UID=33
 ARG GID=33
-ARG CRON_USER=cronuser
+ARG CRON_USER=www-data
 
 # Install busybox-suid for crond to work with non-root users
 RUN apk add --no-cache --update busybox-suid

@@ -1,10 +1,10 @@
 ARG php_version
+
 FROM jagdtiger/php-dev-env-git:php${php_version}
 LABEL org.opencontainers.image.authors="gimatov@gmail.com"
 
-RUN apk add --update supervisor && rm  -rf /tmp/* /var/cache/apk/*
+RUN apk add --no-cache supervisor
 
-#ADD supervisord.conf /etc/
+ADD ./images/php/worker/supervisord.conf /etc/
+
 #ENTRYPOINT ["supervisord", "--nodaemon", "--configuration", "/etc/supervisord.conf"]
-
-CMD ["/usr/bin/supervisord"]
