@@ -50,7 +50,10 @@ RUN apk add --no-cache \
     make \
     sqlite \
     nodejs \
+    npm \
     yarn \
+    && npm install -g corepack \
+    && corepack enable \
     && rm -rf /var/cache/apk/*
 
 # Install Composer from official image

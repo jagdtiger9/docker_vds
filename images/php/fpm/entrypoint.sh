@@ -1,9 +1,19 @@
 #!/bin/bash
 set -e
 
+echo "uid-gid: $UID:${GID}\n"
+# Create group if GID doesn't exist
+if ! getent group ${GID} > /dev/null 2>&1; then
+    addgroup -g ${GID} g${GID}
+fi
+# Create user if UID doesn't exist
+if ! getent passwd ${UID} > /dev/null 2>&1; then
+    WEB_GROUP_NAME=$(getent group ${GID} | cut -d: -f1)
+    adduser -s /bin/bash -u ${UID} -G ${WEB_GROUP_NAME} -D u${UID}
+fi
+
 echo "uid-gid: $WEB_UID:$WEB_GID"
 echo "FPM_LOG_LEVEL: ${FPM_LOG_LEVEL}"
-
 # Create group if GID doesn't exist
 if ! getent group ${WEB_GID} > /dev/null 2>&1; then
     addgroup -g ${WEB_GID} g${WEB_GID}

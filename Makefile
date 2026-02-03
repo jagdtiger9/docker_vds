@@ -100,7 +100,7 @@ run.cmd:
 	docker compose exec --user ${UID}:${GID} ${SERVICE} /bin/bash -c '$(CMD)'
 #  См. readme
 init:
-	docker compose exec ${SERVICE} /bin/bash -c 'groupadd --gid ${GID} gr${GID}; useradd --shell /bin/bash --uid ${UID} --gid ${GID} -m u${UID}'
+	docker compose exec ${SERVICE} /bin/bash -c 'addgroup -g ${GID} g${GID}; adduser -s /bin/bash -u ${UID} -g ${GID} -D u${UID}'
 prune:
 	docker image prune -a
 web-user-create:
