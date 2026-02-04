@@ -221,6 +221,8 @@ config/nginx/hosts/          # CONF_HOSTS - nginx configs
 # 1. Create nginx config
 make new.host HOST="myapp.local"
 
+or create it manually and place in the ./config/nginx/hosts/ directory
+
 # 2. Create project directory
 mkdir -p data/www/myapp.local/public
 

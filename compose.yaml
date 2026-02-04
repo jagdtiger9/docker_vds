@@ -15,6 +15,7 @@ services:
         volumes:
             - ${CONF_NGINX}:/etc/nginx/nginx.conf
             - ${CONF_HOSTS}:/etc/nginx/conf.d:ro
+            - ./config/nginx/default_host/:/usr/share/nginx/html/
             - ${DATA_HOSTS}:/var/www
             - ${CERTBOT_WEB}:/var/www/certbot/:ro
             - ${CERTBOT_SSL}:/etc/nginx/ssl/:ro
@@ -37,9 +38,9 @@ services:
         image: docker.angie.software/angie:latest
         profiles: [ _helper_service ]
         volumes:
-            - ./config/nginx/default_host/:/usr/share/nginx/html/
             - ${CONF_ANGIE}:/etc/angie/angie.conf
             - ${CONF_HOSTS}:/etc/angie/conf.d:ro
+            - ./config/nginx/default_host/:/usr/share/nginx/html/
             - ${DATA_HOSTS}:/var/www
             - ${CERTBOT_WEB}:/var/www/certbot/:ro
             - ${CERTBOT_SSL}:/etc/nginx/ssl/:ro
