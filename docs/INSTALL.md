@@ -4,7 +4,6 @@ Docker Compose-based development environment for PHP web applications with multi
 
 ## Table of Contents
 
-- [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
 - [Environment Configuration](#environment-configuration)
 - [Multi-Virtual Host Setup](#multi-virtual-host-setup)
@@ -14,36 +13,16 @@ Docker Compose-based development environment for PHP web applications with multi
 
 ---
 
-## Prerequisites
-
-- Docker Engine 20.10+
-- Docker Compose v2+
-- GNU Make
-- For local HTTPS: mkcert
-
-```bash
-# Check versions
-docker --version
-docker compose version
-```
-
----
-
 ## Quick Start
 
-### 1. Clone and Configure
+### 1. Configure
 
 ```bash
-# Make and enter Docker working directory
-cd ~/work/Docker
-# Clone repository
-git clone <repository-url> .
-
 # Create environment file
 cp .env.example .env
 ```
 
-### 2. Set User Permissions
+#### 1.1. Set User Permissions
 
 Get your user/group IDs and update `.env`:
 
@@ -59,7 +38,7 @@ UID=1000
 GID=1000
 ```
 
-### 3. Set Required Passwords
+#### 1.2. Set Required Passwords
 
 Edit `.env` and set secure passwords:
 
@@ -71,7 +50,7 @@ GRAFANA_PASSWORD=your_grafana_password
 MYSQL_EXPORTER_PASSWORD=your_exporter_password
 ```
 
-### 4. Build and Start
+### 2. Build and Start
 
 ```bash
 # Build images
@@ -84,7 +63,7 @@ make up
 make ps
 ```
 
-### 5. Open default host
+### 3. Open default host
 
 ```
 http://localhost/
