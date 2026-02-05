@@ -34,10 +34,10 @@ docker compose version
 ### 1. Clone and Configure
 
 ```bash
+# Make and enter Docker working directory
+cd ~/work/Docker
 # Clone repository
-cd ~/work
-git clone <repository-url> Docker
-cd Docker
+git clone <repository-url> .
 
 # Create environment file
 cp .env.example .env
@@ -88,105 +88,8 @@ make ps
 
 ```bash
 # Create user inside PHP container (run once after first start)
+# Deprecated, the first initialization is performed on first "make up" launch
 make init
-```
-
----
-
-## Environment Configuration
-
-### Essential Parameters
-
-| Parameter | Description | Default | Recommended |
-|-----------|-------------|---------|-------------|
-| `UID` | Host user ID | 1000 | `id -u` output |
-| `GID` | Host group ID | 1000 | `id -g` output |
-| `PROJECT` | Default project name | magicpro | Your main project |
-| `PHP_VERSION` | PHP version | 8.4 | 8.3 or 8.4 |
-| `ALLOW_XDEBUG` | Enable Xdebug | 0 | 0 (prod), 1 (dev) |
-| `PROXY_SERVER` | Web server | nginx | nginx or angie |
-
-### Development Environment (.env)
-
-```ini
-# Project
-PROJECT=myapp
-UID=1000
-GID=1000
-WEB_UID=82
-WEB_GID=82
-
-# Compose
-COMPOSE_BIN=docker compose
-COMPOSE_BAKE=true
-COMPOSE_PROFILES=proxy_ws,main,database,metrics,pma
-
-# PHP
-PHP_VERSION=8.4
-DEFAULT_TIME_ZONE=Europe/Moscow
-ALLOW_XDEBUG=1
-FPM_LOG_LEVEL=notice
-
-# Database
-MYSQL_ROOT_PASSWORD=dev_password_123
-DB_PORT_MAP=33006:3306
-
-# phpMyAdmin
-PMA_HOST=db
-PMA_PORT_MAP=8081:80
-UPLOAD_LIMIT=268435456
-
-# Redis
-CONF_REDIS=./config/redis/redis.conf
-DATA_REDIS=./data/redis/
-
-# RabbitMQ
-RABBITMQ_USER=admin
-RABBITMQ_PASSWORD=rabbitmq_dev_pass
-
-# Monitoring
-GRAFANA_USER=admin
-GRAFANA_PASSWORD=grafana_dev_pass
-MYSQL_EXPORTER_PASSWORD=exporter_pass
-
-# Nginx
-PROXY_SERVER=nginx
-CONF_HOSTS=./config/nginx/hosts/
-DATA_HOSTS=./data/www/
-
-# Paths
-CONF_WORKER=./config/worker/
-CONF_CRON=./config/cron/hosts_crontab
-DATA_MYSQL=./data/mysql/
-DATA_LOG=./data/log/
-```
-
-### Production Environment
-
-Key differences for production:
-
-```ini
-# Minimal profiles - no pma, metrics only if needed
-COMPOSE_PROFILES=proxy_ws,main,database,prod
-
-# Disable debug tools
-ALLOW_XDEBUG=0
-FPM_LOG_LEVEL=warning
-
-# External paths (outside container directory)
-DATA_MYSQL=~/work/database/
-DATA_HOSTS=~/work/web_projects/
-DATA_LOG=~/work/logs/
-CONF_HOSTS=~/work/configs/nginx/
-CONF_WORKER=~/work/configs/worker/
-CONF_CRON=~/work/configs/cron/hosts_crontab
-
-# Disable direct DB access from host
-#DB_PORT_MAP=33006:3306
-
-# Larger log rotation
-LOGROTATE_COPIES=10
-LOGROTATE_SIZE=50M
 ```
 
 ---
@@ -219,18 +122,18 @@ config/nginx/hosts/          # CONF_HOSTS - nginx configs
 
 ```bash
 # 1. Create nginx config
-make new.host HOST="myapp.local"
+make new.host HOST="magicpro.local"
 
 or create it manually and place in the ./config/nginx/hosts/ directory
 
 # 2. Create project directory
-mkdir -p data/www/myapp.local/public
+mkdir -p data/www/magicpro.local/public
 
 # 3. Create index.php
-echo '<?php phpinfo();' > data/www/myapp.local/public/index.php
+echo '<?php phpinfo();' > data/www/magicpro.local/public/index.php
 
 # 4. Add to /etc/hosts
-echo "127.0.0.1 myapp.local" | sudo tee -a /etc/hosts
+echo "127.0.0.1 magicpro.local" | sudo tee -a /etc/hosts
 
 # 5. Reload nginx
 make nginx.reload
@@ -263,15 +166,15 @@ make nginx.reload
 make cert.local.install
 
 # 2. Create certificate
-make cert.local.create DOMAIN=myapp.local
+make cert.local.create DOMAIN=magicpro.local
 
 # 3. Create nginx config with HTTPS
-make new.host.https HOST="myapp.local"
+make new.host.https HOST="magicpro.local"
 
 # 4. Update config to use local certificates
-# Edit config/nginx/hosts/myapp.local.conf:
-#   ssl_certificate /etc/nginx/ssl/myapp.local.crt;
-#   ssl_certificate_key /etc/nginx/ssl/myapp.local.key;
+# Edit config/nginx/hosts/magicpro.local.conf:
+#   ssl_certificate /etc/nginx/ssl/magicpro.local.crt;
+#   ssl_certificate_key /etc/nginx/ssl/magicpro.local.key;
 ```
 
 ### Virtual Host Config Templates
@@ -394,7 +297,7 @@ make certbot.renew.dry    # Test renewal
 
 # Local development (mkcert)
 make cert.local.install   # Install mkcert
-make cert.local.create DOMAIN=myapp.local
+make cert.local.create DOMAIN=magicpro.local
 ```
 
 ### Debug Tools

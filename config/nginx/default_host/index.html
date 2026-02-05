@@ -1,1 +1,59 @@
-<h3>index</h3>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Default Magicpro Host</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            color: #333;
+        }
+        h2 { border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        h3 { margin-top: 30px; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 10px; }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre code { background: none; padding: 0; }
+    </style>
+</head>
+<body>
+    <h2>Default Magicpro Host</h2>
+
+    <h3>To make a custom project</h3>
+
+    <ul>
+        <li>
+            Define new host configuration files' path in .env, for example:
+            <pre><code>CONF_HOSTS=./data/config/hosts/</code></pre>
+        </li>
+        <li>
+            Add new host configuration file
+            <pre><code>$ make new.host HOST="magicpro.local"</code></pre>
+        </li>
+        <li>
+            Define path for project files of a web hosts in .env, for example:
+            <pre><code>DATA_HOSTS=./data/web/</code></pre>
+        </li>
+        <li>
+            Add new host project directory, with a minimum required files (public/index.html)
+            <pre><code>[DATA_HOSTS]/magicpro.local/public/index.html</code></pre>
+        </li>
+    </ul>
+</body>
+</html>
