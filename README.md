@@ -150,6 +150,6 @@ GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'exporter'@'%';
 
 > $ make web-user-create
 
-- Для каждого проекта коректируем права доступа
+- Для каждого проекта корректируем права доступа
 
 > $ make write-permissions 
