@@ -84,36 +84,51 @@ make up
 make ps
 ```
 
-### 5. Initialize Container User
+### 5. Open default host
 
-```bash
-# Create user inside PHP container (run once after first start)
-# Deprecated, the first initialization is performed on first "make up" launch
-make init
+```
+http://localhost/
 ```
 
 ---
 
-## Multi-Virtual Host Setup
+## Virtual Host Setup
+
+### Config
+
+Define virtual host parameters in .env
+
+```
+DATA_HOSTS=...path_to_your_host_project_files...
+CONF_HOSTS=...path_to_you_host_config_giles...
+```
+
+Example:
+```
+DATA_HOSTS=./data/www/
+CONF_HOSTS=./data/config/hosts/
+```
 
 ### Directory Structure
 
+
+
 ```
-data/www/                    # DATA_HOSTS - all projects root
+[DATA_HOSTS]                 # DATA_HOSTS - all projects root
 ├── site1.local/
 │   └── public/              # Document root
 │       └── index.php
 ├── site2.local/
 │   └── public/
 │       └── index.php
-└── api.example.com/
+└── magicpro.local/
     └── public/
         └── index.php
 
-config/nginx/hosts/          # CONF_HOSTS - nginx configs
+[CONF_HOSTS]                 # CONF_HOSTS - nginx configs
 ├── site1.local.conf
 ├── site2.local.conf
-└── api.example.com.conf
+└── magicpro.local.conf
 ```
 
 ### Adding a New Virtual Host
@@ -124,13 +139,13 @@ config/nginx/hosts/          # CONF_HOSTS - nginx configs
 # 1. Create nginx config
 make new.host HOST="magicpro.local"
 
-or create it manually and place in the ./config/nginx/hosts/ directory
+or create it manually and place in the [CONF_HOSTS] directory
 
 # 2. Create project directory
-mkdir -p data/www/magicpro.local/public
+mkdir -p [DATA_HOSTS]/magicpro.local/public
 
 # 3. Create index.php
-echo '<?php phpinfo();' > data/www/magicpro.local/public/index.php
+echo '<?php phpinfo();' > [DATA_HOSTS]/magicpro.local/public/index.php
 
 # 4. Add to /etc/hosts
 echo "127.0.0.1 magicpro.local" | sudo tee -a /etc/hosts
@@ -146,7 +161,7 @@ make nginx.reload
 make new.host.https HOST="example.com"
 
 # 2. Create project directory
-mkdir -p data/www/example.com/public
+mkdir -p [DATA_HOSTS]/example.com/public
 
 # 3. Temporarily configure for certbot (edit config)
 # Comment out SSL lines, keep only port 80 with acme-challenge
