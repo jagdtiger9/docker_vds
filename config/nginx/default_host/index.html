@@ -54,9 +54,25 @@
             Add a new host project directory with a minimal set of required files (public/index.html)
             <pre><code>[DATA_HOSTS]/magicpro.local/public/index.html</code></pre>
         </li>
-        <li>
-            More info - [docker install directory]/docs/INSTALL.md
-        </li>
     </ul>
+
+    <h3>Directory structure example</h3>
+    <pre><code>[DATA_HOSTS]                 # DATA_HOSTS - all projects root
+├── site1.local/
+│   └── public/              # Document root
+│       └── index.php
+├── site2.local/
+│   └── public/
+│       └── index.php
+└── magicpro.local/
+    └── public/
+        └── index.php
+
+[CONF_HOSTS]                 # CONF_HOSTS - nginx configs
+├── site1.local.conf
+├── site2.local.conf
+└── magicpro.local.conf</code></pre>
+
+    <p>More info - <u>[docker install directory]/docs/INSTALL.md</u></p>
 </body>
 </html>
