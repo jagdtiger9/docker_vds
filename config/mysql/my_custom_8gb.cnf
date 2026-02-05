@@ -1,0 +1,95 @@
+# Percona 8 - InnoDB Only - 8GB RAM Production Server
+# Optimized for: 8GB RAM, SSD storage, InnoDB tables only
+
+[client]
+port = 3306
+socket = /tmp/mysql.sock
+
+[mysqld]
+# === Connection Settings ===
+interactive_timeout = 3600
+wait_timeout = 3600
+max_allowed_packet = 64M
+max_connections = 200
+max_connect_errors = 10000000
+
+# === Logging ===
+slow_query_log = ON
+slow_query_log_file = /var/log/mysql/mysql_slow_query.log
+long_query_time = 1
+# log_queries_not_using_indexes = ON
+
+# === General Settings ===
+port = 3306
+socket = /tmp/mysql.sock
+skip-external-locking
+
+# Recommended in standard MySQL setup
+#sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_ALL_TABLES
+# Enabled
+#sql_mode=STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+# Disabled
+sql_mode=NO_ENGINE_SUBSTITUTION
+
+group_concat_max_len = 2048
+
+# === Thread/Table Cache ===
+table_open_cache = 4000
+table_open_cache_instances = 16
+thread_cache_size = 32
+open_files_limit = 65535
+
+# === Per-Thread Buffers (keep small, multiplied by connections) ===
+sort_buffer_size = 256K
+join_buffer_size = 256K
+read_buffer_size = 256K
+read_rnd_buffer_size = 512K
+
+# === MyISAM (minimal - required by system tables) ===
+key_buffer_size = 32M
+
+# === InnoDB Settings (8GB RAM - 5GB buffer pool ~62%) ===
+innodb_buffer_pool_size = 5G
+innodb_buffer_pool_instances = 5
+innodb_log_file_size = 1G
+innodb_log_buffer_size = 64M
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+innodb_file_per_table = 1
+innodb_lock_wait_timeout = 50
+
+# I/O settings (SSD optimized)
+innodb_io_capacity = 2000
+innodb_io_capacity_max = 4000
+innodb_flush_neighbors = 0
+
+# Thread settings
+innodb_read_io_threads = 4
+innodb_write_io_threads = 4
+innodb_purge_threads = 4
+innodb_page_cleaners = 4
+
+# Performance tuning
+innodb_adaptive_hash_index = ON
+innodb_change_buffering = all
+
+# === InnoDB Fulltext ===
+innodb_ft_min_token_size = 1
+innodb_ft_enable_stopword = OFF
+
+# === Replication ===
+binlog_format = ROW
+log-bin = mysql-bin
+server-id = 1
+sync_binlog = 1
+binlog_expire_logs_seconds = 604800
+
+# === Performance Schema ===
+performance_schema = ON
+
+[mysqldump]
+quick
+max_allowed_packet = 64M
+
+[mysql]
+no-auto-rehash

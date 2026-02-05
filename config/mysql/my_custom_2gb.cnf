@@ -1,0 +1,83 @@
+# Percona 8 - InnoDB Only - 2GB RAM Production Server
+# Optimized for: 2GB RAM, SSD storage, InnoDB tables only
+
+[client]
+port = 3306
+socket = /tmp/mysql.sock
+
+[mysqld]
+# === Connection Settings ===
+interactive_timeout = 3600
+wait_timeout = 3600
+max_allowed_packet = 32M
+max_connections = 100
+max_connect_errors = 10000000
+
+# === Logging ===
+slow_query_log = ON
+slow_query_log_file = /var/log/mysql/mysql_slow_query.log
+long_query_time = 1
+
+# === General Settings ===
+port = 3306
+socket = /tmp/mysql.sock
+skip-external-locking
+sql_mode = NO_ENGINE_SUBSTITUTION
+group_concat_max_len = 2048
+
+# === Thread/Table Cache ===
+table_open_cache = 1024
+table_open_cache_instances = 8
+thread_cache_size = 16
+open_files_limit = 65535
+
+# === Per-Thread Buffers ===
+sort_buffer_size = 256K
+join_buffer_size = 256K
+read_buffer_size = 128K
+read_rnd_buffer_size = 256K
+
+# === MyISAM (minimal - required by system tables) ===
+key_buffer_size = 16M
+
+# === InnoDB Settings (2GB RAM - 1GB buffer pool ~50%) ===
+innodb_buffer_pool_size = 1G
+innodb_buffer_pool_instances = 1
+innodb_log_file_size = 256M
+innodb_log_buffer_size = 16M
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+innodb_file_per_table = 1
+innodb_lock_wait_timeout = 50
+
+# I/O settings (SSD optimized)
+innodb_io_capacity = 1000
+innodb_io_capacity_max = 2000
+innodb_flush_neighbors = 0
+
+# Thread settings (reduced for low memory)
+innodb_read_io_threads = 2
+innodb_write_io_threads = 2
+innodb_purge_threads = 2
+innodb_page_cleaners = 2
+
+# === InnoDB Fulltext ===
+innodb_ft_min_token_size = 1
+innodb_ft_enable_stopword = OFF
+
+# === Replication ===
+binlog_format = ROW
+log-bin = mysql-bin
+server-id = 1
+sync_binlog = 0
+binlog_expire_logs_seconds = 259200
+
+# === Performance Schema (disabled to save ~400MB) ===
+performance_schema = OFF
+
+[mysqldump]
+quick
+max_allowed_packet = 32M
+
+[mysql]
+no-auto-rehash
