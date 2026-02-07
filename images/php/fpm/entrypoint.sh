@@ -29,7 +29,7 @@ WEB_GROUP=$(getent group ${WEB_GID} | cut -d: -f1)
 echo "www: ${WEB_NAME}:${WEB_GROUP} - ${WWW_CONF_PATH}"
 
 WEB_NAME=www-data
-WWB_GROUP=www-data
+WEB_GROUP=www-data
 
 # Replace placeholders in www.conf
 sed -i "s/\[WEB_NAME\]/${WEB_NAME}/g" ${WWW_CONF_PATH}
