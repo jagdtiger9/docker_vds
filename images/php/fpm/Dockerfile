@@ -29,7 +29,6 @@ RUN if [ "$allow_xdebug" = "1" ]; then \
 
 COPY --chmod=755 ./images/php/fpm/entrypoint.sh /entrypoint.sh
 
-USER www-data
 EXPOSE 9000
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["php-fpm"]

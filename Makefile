@@ -48,7 +48,6 @@ define perms
     && mkdir -p -m 0777 ${CERTBOT_WEB} \
     && mkdir -p -m 0777 ${CERTBOT_SSL} \
     && mkdir -p -m 0777 ${CONF_HOSTS} \
-    && mkdir -p -m 0777 ${WS_DATA} \
     && mkdir -p -m 0777 $$(echo ${CONF_CRON} | rev | cut -d"/" -f2- | rev) \
     && touch ${CONF_CRON} \
     && mkdir -p -m 0777 ${CONF_WORKER}
