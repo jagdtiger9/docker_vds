@@ -7,4 +7,5 @@ RUN apk add --no-cache supervisor
 
 ADD ./images/php/worker/supervisord.conf /etc/
 
+USER www-data
 #ENTRYPOINT ["supervisord", "--nodaemon", "--configuration", "/etc/supervisord.conf"]

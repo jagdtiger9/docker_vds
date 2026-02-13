@@ -27,8 +27,9 @@ RUN if [ "$allow_xdebug" = "1" ]; then \
         && rm /usr/local/bin/install-php-extensions; \
     fi
 
-EXPOSE 9000
-
 COPY --chmod=755 ./images/php/fpm/entrypoint.sh /entrypoint.sh
+
+USER www-data
+EXPOSE 9000
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["php-fpm"]
