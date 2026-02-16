@@ -248,16 +248,17 @@ services:
                 tag: "logger"
 
     musicGo:
-        image: lg.gpmradio.ru:5050/web/logger/logger/logger:dev
+        image: lg.gpmradio.ru:5050/cast/musicgo/music_go/musicgo:dev
         #        build:
         #            context: .
         #            dockerfile: ./images/musicGo/Dockerfile
         container_name: musicGo
-        profiles: [ custom_101 ]
+        profiles: [ radio ]
         volumes:
-            - ${CONF_LOGGER}:/etc/logger/logger.ini
-            - ${LOGGER_SERVICE_LOG}:/var/log/logger
-            - ${LOGGER_CLIENT_LOG}:/var/logger
+            - ${CONF_MUSICGO}:/etc/musicgo/musicgo.ini
+        ports:
+            - "127.0.0.1:8100:8100"
+        command: [ "/musicgo/musicgo_alias", "/etc/musicgo/musicgo.ini" ]
         networks:
             net:
         restart: unless-stopped
