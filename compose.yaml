@@ -44,6 +44,7 @@ services:
             - ${DATA_HOSTS}:/var/www
             - ${CERTBOT_WEB}:/var/www/certbot/:ro
             - ${CERTBOT_SSL}:/etc/nginx/ssl/:ro
+            - ${NGINX_CACHE}:/var/cache/nginx
         ports:
             - "80:80"
             - "443:443"
