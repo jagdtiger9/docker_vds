@@ -35,6 +35,8 @@ perms:
 # Для создания директории крона используется двойной символ $$
 # $ в make-файлах - символ определения переменной, для использования в командном контексте его нужно экранировать
 # https://stackoverflow.com/questions/74295605/why-call-from-makefile-returns-empty-result-while-same-call-from-console-does-no
+# https://medium.com/@nielssj/docker-volumes-and-file-system-permissions-772c1aee23ca
+# https://denibertovic.com/posts/handling-permissions-with-docker-volumes/
 define perms
     mkdir -p -m 0777 ${DATA_MYSQL} \
     && mkdir -p -m 0777 ${DATA_HOSTS} \

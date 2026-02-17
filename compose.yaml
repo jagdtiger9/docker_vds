@@ -247,7 +247,7 @@ services:
                 syslog-facility: "daemon"
                 tag: "logger"
 
-    musicGo:
+    music-go:
         image: lg.gpmradio.ru:5050/cast/musicgo/music_go/musicgo:dev
         #        build:
         #            context: .
