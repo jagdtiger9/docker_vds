@@ -235,9 +235,9 @@ services:
         container_name: logger
         profiles: [ logger ]
         volumes:
-            - ${CONF_LOGGER}:/etc/logger/logger.ini
-            - ${LOGGER_SERVICE_LOG}:/var/log/logger
-            - ${LOGGER_CLIENT_LOG}:/var/logger
+            - ${CONF_LOGGER:-/dev/null}:/etc/logger/logger.ini
+            - ${LOGGER_SERVICE_LOG:-/dev/null}:/var/log/logger
+            - ${LOGGER_CLIENT_LOG:-/dev/null}:/var/logger
         networks:
             - net
         restart: unless-stopped
@@ -256,7 +256,7 @@ services:
         container_name: musicGo
         profiles: [ radio ]
         volumes:
-            - ${CONF_MUSICGO}:/etc/musicgo/musicgo.ini
+            - ${CONF_MUSICGO:-/dev/null}:/etc/musicgo/musicgo.ini
         ports:
             - "127.0.0.1:8100:8100"
         command: [ "/musicgo/musicgo_alias", "/etc/musicgo/musicgo.ini" ]
