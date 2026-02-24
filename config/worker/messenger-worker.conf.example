@@ -24,6 +24,10 @@ autorestart=true
 startretries=5
 process_name=%(program_name)s_%(process_num)02d
 environment=CONSUMER_ID=%(process_num)02d
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
 
 [program:shop-messenger-consumer]
 command=/usr/bin/php /var/www/shop/bin/console messenger:consume --limit=20 --failure-limit=5 --memory-limit=512M --time-limit=60 -vv async
@@ -35,3 +39,7 @@ autorestart=true
 startretries=5
 process_name=%(program_name)s_%(process_num)02d
 environment=CONSUMER_ID=%(process_num)02d
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0

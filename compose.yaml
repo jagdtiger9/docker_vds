@@ -175,7 +175,7 @@ services:
             - /etc/group:/etc/group
             - ${DATA_HOSTS}:/var/www
             - ${CONF_WORKER}:/etc/supervisor/conf.d/
-        command: [ '/usr/bin/supervisord', '--nodaemon', '-c', '/etc/supervisord.conf' ]
+        command: [ '/usr/bin/supervisord', '-c', '/etc/supervisord.conf' ]
         #        depends_on:
         #            db:
         #                condition: service_healthy
