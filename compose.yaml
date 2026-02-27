@@ -22,6 +22,8 @@ services:
         ports:
             - "80:80"
             - "443:443"
+            # MusicGo
+            - "8100:8100"
         entrypoint: /bin/sh
         command: -c 'while :; do sleep 6h && wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'
         networks:
@@ -49,6 +51,8 @@ services:
             - "80:80"
             - "443:443"
             - "8099:8099"
+            # MusicGo
+            - "8100:8100"
         entrypoint: /bin/sh
         command: -c 'while :; do sleep 6h && wait $${!}; angie -s reload; done & angie -g "daemon off;"'
         networks:
@@ -256,9 +260,10 @@ services:
         container_name: musicGo
         profiles: [ radio ]
         volumes:
-            - ${CONF_MUSICGO:-/dev/null}:/etc/musicgo/musicgo.ini
+            - ${MUSICGO_CONF:-/dev/null}:/etc/musicgo/musicgo.ini
+            - ${MUSICGO_DATA:-/dev/null}:/var/musicdb
         ports:
-            - "127.0.0.1:8100:8100"
+            - "127.0.0.1:8101:8101"
         command: [ "/musicgo/musicgo_alias", "/etc/musicgo/musicgo.ini" ]
         networks:
             net:

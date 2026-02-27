@@ -248,6 +248,14 @@ COMPOSE_PROFILES=proxy_ws,main,metrics,pma
 
 ## Common Operations
 
+```bash
+curl -sL https://deb.nodesource.com/setup_22.x | sudo bash - \
+&& sudo apt-get install -y nodejs \
+&& sudo npm install -g corepack \
+&& corepack enable \
+&& yarn set version stable
+```
+
 ### Container Management
 
 ```bash
