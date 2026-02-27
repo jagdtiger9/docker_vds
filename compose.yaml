@@ -263,7 +263,7 @@ services:
             - ${MUSICGO_CONF:-/dev/null}:/etc/musicgo/musicgo.ini
             - ${MUSICGO_DATA:-/dev/null}:/var/musicdb
         ports:
-            - "127.0.0.1:8101:8101"
+            - "127.0.0.1:8101:8100"
         command: [ "/musicgo/musicgo_alias", "/etc/musicgo/musicgo.ini" ]
         networks:
             net:
