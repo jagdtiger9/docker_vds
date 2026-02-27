@@ -46,6 +46,16 @@ server {
 	location = /favicon.ico {
 		try_files /favicon.ico =204;
 	}
+    # Кэширование изображений и медиафайлов
+    location ~* \.(jpg|jpeg|gif|png|ico|cur|gz|svg|mp4|ogg|ogv|webm|htc)$ {
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+    }
+    # Кэширование CSS и JS
+    location ~* \.(css|js|woff2)$ {
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+    }
 }
 
 server {
