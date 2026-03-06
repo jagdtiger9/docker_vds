@@ -108,7 +108,21 @@ web-user-create:
 	getent group web-group || sudo groupadd --gid ${WEB_GID} web-group \
 		&& getent passwd web-user || sudo useradd --shell /bin/bash --uid ${WEB_UID} --gid ${WEB_GID} -m web-user
 
-# Подключение-отключение phpmyadmin на продакшн
+# БД: дампы, PMA
+mysql.create.db:
+	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
+		-e "CREATE DATABASE ${DB} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql.create.user:
+	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
+        -e "CREATE USER '${USER}'@'%' IDENTIFIED BY '${PASSWORD}'; GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'%'; FLUSH PRIVILEGES;"
+mysql.dump:
+	docker compose exec db mysqldump \
+		-u root -p${MYSQL_ROOT_PASSWORD} \
+		--single-transaction \
+		${DB}
+mysql.restore:
+	docker compose exec -T db mysql \
+		-u root -p${MYSQL_ROOT_PASSWORD} ${DB} < ${FILE}
 up.pma:
 	COMPOSE_PROFILES=debug ${COMPOSE_BIN} up -d
 down.pma:
