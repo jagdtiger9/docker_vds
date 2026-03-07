@@ -119,7 +119,7 @@ mysql.dump:
 	docker compose exec db mysqldump \
 		-u root -p${MYSQL_ROOT_PASSWORD} \
 		--single-transaction \
-		${DB}
+		${DB} > ${FILE}
 mysql.restore:
 	docker compose exec -T db mysql \
 		-u root -p${MYSQL_ROOT_PASSWORD} ${DB} < ${FILE}
