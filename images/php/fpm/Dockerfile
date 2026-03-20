@@ -6,8 +6,8 @@ LABEL org.opencontainers.image.authors="gimatov@gmail.com"
 # Build cycle
 ARG allow_xdebug
 ARG php_version
-ARG www_conf_path="/etc/php/fpm/pool.d/www.conf"
-ARG php_fpm_path="/etc/php/fpm/php-fpm.conf"
+ARG www_conf_path="/usr/local/etc/php-fpm.d/www.conf"
+ARG php_fpm_path="/usr/local/etc/php-fpm.conf"
 
 # Container RUN cycle
 ENV WWW_CONF_PATH=${www_conf_path}
