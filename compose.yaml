@@ -122,6 +122,8 @@ services:
             - GID=${GID:-1000}
             - WEB_UID=${WEB_UID:-33}
             - WEB_GID=${WEB_GID:-33}
+            - MAX_CHILDREN=${MAX_CHILDREN:-5}
+            - MAX_REQUESTS=${MAX_REQUESTS:-500}
         volumes:
             - ${DATA_HOSTS}:/var/www
             - ${DATA_XDEBUG}:/tmp/xdebug

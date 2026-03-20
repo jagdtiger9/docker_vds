@@ -29,8 +29,10 @@ WEB_GROUP=$(getent group ${WEB_GID} | cut -d: -f1)
 echo "www: ${WEB_NAME}:${WEB_GROUP} - ${WWW_CONF_PATH}"
 
 # Replace placeholders in www.conf
+sed -i "s/\[FPM_LOG_LEVEL\]/${FPM_LOG_LEVEL}/g" ${PHP_FPM_PATH}
 sed -i "s/\[WEB_NAME\]/${WEB_NAME}/g" ${WWW_CONF_PATH}
 sed -i "s/\[WEB_GROUP\]/${WEB_GROUP}/g" ${WWW_CONF_PATH}
-sed -i "s/\[FPM_LOG_LEVEL\]/${FPM_LOG_LEVEL}/g" ${PHP_FPM_PATH}
+sed -i "s/\[MAX_CHILDREN\]/${MAX_CHILDREN}/g" ${WWW_CONF_PATH}
+sed -i "s/\[MAX_REQUESTS\]/${MAX_REQUESTS}/g" ${WWW_CONF_PATH}
 
 exec "$@"
