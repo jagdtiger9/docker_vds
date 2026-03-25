@@ -104,7 +104,7 @@ init:
 	docker compose exec ${SERVICE} /bin/bash -c 'addgroup -g ${GID} g${GID}; adduser -s /bin/bash -u ${UID} -g ${GID} -D u${UID}'
 prune:
 	docker image prune -a
-web-user-create:
+web-user:
 	getent group web-group || sudo groupadd --gid ${WEB_GID} web-group \
 		&& getent passwd web-user || sudo useradd --shell /bin/bash --uid ${WEB_UID} --gid ${WEB_GID} -m web-user
 
