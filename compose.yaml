@@ -120,8 +120,8 @@ services:
             - FPM_LOG_LEVEL=${FPM_LOG_LEVEL:-warning}
             - UID=${UID:-1000}
             - GID=${GID:-1000}
-            - WEB_UID=${WEB_UID:-33}
-            - WEB_GID=${WEB_GID:-33}
+            - WEB_UID=${WEB_UID:-82}
+            - WEB_GID=${WEB_GID:-82}
             - MAX_CHILDREN=${MAX_CHILDREN:-5}
             - MAX_REQUESTS=${MAX_REQUESTS:-500}
         volumes:
@@ -144,8 +144,9 @@ services:
             context: .
             dockerfile: ./images/php/cron/Dockerfile
             args:
-                - php_version=${PHP_VERSION:-8.3}
-                - allow_xdebug=${ALLOW_XDEBUG:-1}
+                php_version: ${PHP_VERSION:-8.3}
+                uid: ${WEB_UID:-82}
+                gid: ${WEB_GID:-82}
         container_name: php-cron
         profiles: [ main ]
         environment:
@@ -170,12 +171,13 @@ services:
             dockerfile: ./images/php/worker/Dockerfile
             args:
                 - php_version=${PHP_VERSION:-8.3}
-                - user=${UID:-1}
+                - uid=${WEB_UID:-82}
+                - gid=${WEB_GID:-82}
         container_name: php-worker
         profiles: [ main ]
         environment:
             PHP_VERSION: ${PHP_VERSION:-8.3}
-            USER: ${UID:-0}
+            USER: ${WEB_UID:-0}
         volumes:
             - /etc/passwd:/etc/passwd
             - /etc/group:/etc/group

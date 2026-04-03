@@ -5,7 +5,7 @@ user=root
 
 [program:magicpro-messenger-consumer]
 command=/usr/bin/php /var/www/magicpro/queueWorker.php 2>&1
-user=www-data
+user=%(ENV_USER)s
 numprocs=2
 startsecs=0
 autostart=true
@@ -16,7 +16,7 @@ environment=CONSUMER_ID=%(process_num)02d
 
 [program:shop-messenger-scheduler]
 command=/usr/bin/php /var/www/shop/bin/console messenger:consume --failure-limit=5 --memory-limit=512M --time-limit=120 scheduler_default -vv
-user=www-data
+user=%(ENV_USER)s
 numprocs=1
 startsecs=0
 autostart=true
@@ -31,7 +31,7 @@ stderr_logfile_maxbytes=0
 
 [program:shop-messenger-consumer]
 command=/usr/bin/php /var/www/shop/bin/console messenger:consume --limit=20 --failure-limit=5 --memory-limit=512M --time-limit=60 -vv async
-user=www-data
+user=%(ENV_USER)s
 numprocs=2
 startsecs=0
 autostart=true
