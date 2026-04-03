@@ -1,0 +1,42 @@
+services:
+    logger:
+        #image: logger/logger:dev
+        image: lg.gpmradio.ru:5050/web/logger/logger/logger:dev
+        container_name: logger
+        profiles: [ logger ]
+        volumes:
+            - ${CONF_LOGGER:-/dev/null}:/etc/logger/logger.ini
+            - ${LOGGER_SERVICE_LOG:-/dev/null}:/var/log/logger
+            - ${LOGGER_CLIENT_LOG:-/dev/null}:/var/logger
+        networks:
+            - net
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "logger"
+
+    music-go:
+        image: lg.gpmradio.ru:5050/cast/musicgo/music_go/musicgo:dev
+        #        build:
+        #            context: .
+        #            dockerfile: ./images/musicGo/Dockerfile
+        container_name: musicGo
+        profiles: [ radio ]
+        volumes:
+            - ${MUSICGO_CONF:-/dev/null}:/etc/musicgo/musicgo.ini
+            - ${MUSICGO_DATA:-/dev/null}:/var/musicdb
+        ports:
+            - "127.0.0.1:8101:8100"
+        command: [ "/musicgo/musicgo_alias", "/etc/musicgo/musicgo.ini" ]
+        networks:
+            net:
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "musicGo"

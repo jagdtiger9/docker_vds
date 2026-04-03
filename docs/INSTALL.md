@@ -36,6 +36,8 @@ Edit `.env`:
 ```ini
 UID=1000
 GID=1000
+WEB_UID=1000
+WEB_GID=1000
 ```
 
 #### 1.2. Set Required Passwords
@@ -205,47 +207,6 @@ Includes HTTP→HTTPS redirect, www→non-www redirect, and SSL configuration.
 
 ---
 
-## Service Profiles
-
-Select which services to run via `COMPOSE_PROFILES`:
-
-| Profile | Services | Use Case |
-|---------|----------|----------|
-| `proxy` | Nginx/Angie (no WS ports) | Production without WebSockets |
-| `proxy_ws` | Nginx/Angie + WebSocket ports + Node.js | WebSocket support |
-| `main` | PHP-FPM, Cron, Workers, Redis, Memcached, RabbitMQ, Sphinx, Syslog, Logrotate | Core services |
-| `database` | Percona MySQL 8 | Use if not using host MySQL |
-| `metrics` | Prometheus, Grafana, Node/Nginx/MySQL/Redis exporters, cAdvisor | Monitoring |
-| `pma` | phpMyAdmin | Database management UI |
-| `debug` | Buggregator | Debug tools |
-| `prod` | Certbot | SSL certificate management |
-| `logger` | Custom logger service | Application logging |
-
-### Profile Combinations
-
-**Development:**
-```ini
-COMPOSE_PROFILES=proxy_ws,main,database,metrics,pma,debug
-```
-
-**Production (minimal):**
-```ini
-COMPOSE_PROFILES=proxy_ws,main,database,prod
-```
-
-**Production (with monitoring):**
-```ini
-COMPOSE_PROFILES=proxy_ws,main,database,metrics,prod
-```
-
-**Using host MySQL:**
-```ini
-# Omit 'database' profile
-COMPOSE_PROFILES=proxy_ws,main,metrics,pma
-```
-
----
-
 ## Common Operations
 
 ```bash
@@ -254,118 +215,6 @@ curl -sL https://deb.nodesource.com/setup_22.x | sudo bash - \
 && sudo npm install -g corepack \
 && corepack enable \
 && yarn set version stable
-```
-
-### Container Management
-
-```bash
-make up              # Start services
-make down            # Stop services
-make ps              # List running containers
-make build           # Rebuild images (with cache)
-make build.nocache   # Rebuild images (no cache)
-make rebuild         # Full rebuild (removes volumes)
-```
-
-### Running Commands in PHP Container
-
-```bash
-# Run in default project
-make run CMD="composer install"
-make run CMD="yarn build"
-make run CMD="php artisan migrate"
-
-# Run in specific project
-make run PROJECT="api" CMD="composer install"
-
-# Run in specific service
-make run.cmd SERVICE="workers" CMD="supervisorctl status"
-```
-
-### Nginx Operations
-
-```bash
-make nginx.reload      # Reload nginx config
-make nginx_ws.reload   # Reload nginx with WebSocket support
-```
-
-### SSL Certificates
-
-```bash
-# Let's Encrypt (production)
-make certbot.create DOMAIN=example.com
-make certbot.renew
-make certbot.renew.dry    # Test renewal
-
-# Local development (mkcert)
-make cert.local.install   # Install mkcert
-make cert.local.create DOMAIN=magicpro.local
-```
-
-### Debug Tools
-
-```bash
-make up.pma          # Start phpMyAdmin + Buggregator
-make down.pma        # Stop debug tools
-```
-
----
-
-## Network Configuration
-
-All services are on subnet `192.168.17.0/24`:
-
-| Service | IP Address | Port |
-|---------|------------|------|
-| MySQL (db) | 192.168.17.33 | 3306 |
-| Sphinx | 192.168.17.22 | 9312, 9306 |
-| Host machine | 172.17.0.1 | - |
-
-Access services from containers using hostnames:
-- `db` - MySQL
-- `redis` - Redis
-- `memcached` - Memcached
-- `rabbitmq` - RabbitMQ
-- `sphinx` - Sphinx
-
----
-
-## Port Mapping
-
-| Service | Host Port | Container Port |
-|---------|-----------|----------------|
-| HTTP | 80 | 80 |
-| HTTPS | 443 | 443 |
-| MySQL | 33006 | 3306 |
-| phpMyAdmin | 8081 | 80 |
-| WebSocket HTTP | 8085 | 8085 |
-| WebSocket HTTPS | 8485 | 8485 |
-| WebSocket | 8033 | 8033 |
-| WebSocket SSL | 8433 | 8433 |
-| Prometheus | 9090 | 9090 |
-| Buggregator | 8000 | 8000 |
-| Angie status | 8099 | 8099 |
-
----
-
-## Troubleshooting
-
-### Permission Issues
-
-```bash
-# Re-run permission setup
-make perms
-
-# Initialize user in container
-make init
-```
-
-### Container User Mismatch
-
-Ensure `UID` and `GID` in `.env` match your host user:
-```bash
-id -u  # Should match UID
-id -g  # Should match GID
 ```
 
 ### MySQL Connection from Host
@@ -389,11 +238,4 @@ docker logs proxy
 
 # Aggregated logs (if syslog enabled)
 tail -f data/log/*.log
-```
-
-### Rebuild Single Service
-
-```bash
-docker compose build --no-cache fpm
-docker compose up -d fpm
 ```

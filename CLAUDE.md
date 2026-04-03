@@ -84,10 +84,6 @@ Services are organized into profiles (configured via `COMPOSE_PROFILES` in `.env
 
 All services on `192.168.17.0/24` subnet (bridge network `net`). Access host machine services from containers via `172.17.0.1`.
 
-### Custom Compose Override
-
-Use `COMPOSE_CUSTOM` env var to include project-specific compose file. Falls back to `custom-default.yaml`.
-
 ### User Permissions
 
 Set `UID` and `GID` in `.env` to match host user (`id -u; id -g`). Container users are created automatically on startup or via `make init`.

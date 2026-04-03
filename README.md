@@ -65,15 +65,8 @@ $ make cert.local
 
 # Запуск
 
-1. **Сборка**
-
 ```
 $ make build
-```
-
-2. **Запуск**
-
-```
 $ make up
 ```
 
@@ -143,13 +136,3 @@ Grafana dashboards:
 CREATE USER 'exporter'@'%' IDENTIFIED BY 'password' WITH MAX_USER_CONNECTIONS 3;
 GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'exporter'@'%';
 ```
-
-## Update
-
-- Создаем системного web пользователя, запуск из директории Docker
-
-> $ make web-user-create
-
-- Для каждого проекта корректируем права доступа
-
-> $ make write-permissions 
