@@ -1,8 +1,16 @@
 # Руководство
 
-### Начальная конфигурация
+###   
 
-See [docs/INSTALL.md](docs/INSTALL.md).
+```
+$ make build
+$ make up
+```
+
+Open default web page:
+> http://localhost/
+
+More details: [docs/INSTALL.md](docs/INSTALL.md)
 
 ### Дополнительная информация
 
