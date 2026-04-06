@@ -36,8 +36,6 @@ Edit `.env`:
 ```ini
 UID=1000
 GID=1000
-WEB_UID=1000
-WEB_GID=1000
 ```
 
 #### 1.2. Set Required Passwords

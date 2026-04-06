@@ -12,12 +12,12 @@ help: ## Print this help screen
 
 ## —— Install 🚀 ————————————————————————————————————————————————————————————————————————————————————
 ## 1. Copy .env.example to .env and adjust settings:
-##  - UID, GID
+##  - UID, GID - use your host user uid/gid: $ id -u; $ id -g
 ##  - MYSQL_ROOT_PASSWORD, RABBITMQ_PASSWORD, GRAFANA_PASSWORD
-##  - CONF_HOSTS, DATA_HOSTS
+##  - CONF_HOSTS, DATA_HOSTS - virtual hosts options
 ## 2. Run: make build && make up
 ## 3. Run: make web-user (in case WEB_UID/WEB_GID differs from UID/GID)
-## 4. Open: http://localhost/ for more info about virtual hosts settings (with a fresh install only)
+## 4. Open: http://localhost/ for more info about virtual hosts settings (fresh install only)
 ## Detailed instructions: docs/INSTALL.md
 ##
 ## —— Docker 🐳: Service containers ————————————————————————————————————————————————————————————————
@@ -65,6 +65,7 @@ define perms
     && mkdir -p -m 0777 ${CONF_WORKER}
 endef
 
+##
 ## —— Docker 🐳: Service utilities ————————————————————————————————————————————————————————————————
 # Выполнение любых служебных операций внутри php контейнера, без необходимости установки локальных инструментов
 # make run CMD="yarn build"
@@ -79,6 +80,7 @@ web-user: ## Optional, create host user with the same uid as the web-user
 	getent group web-group || sudo groupadd --gid ${WEB_GID} web-group \
 		&& getent passwd web-user || sudo useradd --shell /bin/bash --uid ${WEB_UID} --gid ${WEB_GID} -m web-user
 
+##
 ## —— Docker 🐳: Database management ————————————————————————————————————————————————————————————————
 # БД: дампы, PMA
 mysql.create.db: ## Create database
@@ -100,6 +102,7 @@ up.pma: ## PMA service UP
 down.pma: ## PMA service DOWN
 	COMPOSE_PROFILES=debug ${COMPOSE_BIN} down
 
+##
 ## —— Docker 🐳: Virtual hosts ————————————————————————————————————————————————————————————————
 # Добавление нового хоста
 # make new.host.https HOST="host.domain"
