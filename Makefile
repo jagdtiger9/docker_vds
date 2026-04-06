@@ -5,10 +5,21 @@ ifndef SERVICE
 override SERVICE=fpm
 endif
 
+##
 ## —— 🎵 🐳 Docker Makefile 🐳 🎵 ——————————————————————————————————
 help: ## Print this help screen
 	@grep -E '(^[a-zA-Z0-9\./_-]+:.*?##.*$$)|(^##)' $(filter-out .env, $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*?## "}{printf "\033[32m%-30s\033[0m %s\n", $$1, $$2}' | sed -e 's/\[32m##/[33m/'
 
+## —— Install 🚀 ————————————————————————————————————————————————————————————————————————————————————
+## 1. Copy .env.example to .env and adjust settings:
+##  - UID, GID
+##  - MYSQL_ROOT_PASSWORD, RABBITMQ_PASSWORD, GRAFANA_PASSWORD
+##  - CONF_HOSTS, DATA_HOSTS
+## 2. Run: make build && make up
+## 3. Run: make web-user (in case WEB_UID/WEB_GID differs from UID/GID)
+## 4. Open: http://localhost/ for more info about virtual hosts settings (with a fresh install only)
+## Detailed instructions: docs/INSTALL.md
+##
 ## —— Docker 🐳: Service containers ————————————————————————————————————————————————————————————————
 up: ## Start docker hub services
 	$(perms) && ${COMPOSE_BIN} up -d
@@ -119,3 +130,4 @@ cert.local.install: ## Create local SSL certificate center
 	&& mkcert -install
 cert.local.create: ## Create SSL certificate for a given local DOMAIN
 	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
+##
