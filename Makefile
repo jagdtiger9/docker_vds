@@ -98,9 +98,9 @@ mysql.restore: ## Restore database dump
 	docker compose exec -T db mysql \
 		-u root -p${MYSQL_ROOT_PASSWORD} ${DB} < ${FILE}
 up.pma: ## PMA service UP
-	COMPOSE_PROFILES=debug ${COMPOSE_BIN} up -d
+	COMPOSE_PROFILES=pma ${COMPOSE_BIN} up -d
 down.pma: ## PMA service DOWN
-	COMPOSE_PROFILES=debug ${COMPOSE_BIN} down
+	COMPOSE_PROFILES=pma ${COMPOSE_BIN} down
 
 ##
 ## —— Docker 🐳: Virtual hosts ————————————————————————————————————————————————————————————————
@@ -133,4 +133,7 @@ cert.local.install: ## Create local SSL certificate center
 	&& mkcert -install
 cert.local.create: ## Create SSL certificate for a given local DOMAIN
 	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
-##
+
+tests:
+	${COMPOSE_BIN} -f docker-compose.yml run tests
+
