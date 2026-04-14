@@ -133,4 +133,42 @@ cert.local.install: ## Create local SSL certificate center
 	&& mkcert -install
 cert.local.create: ## Create SSL certificate for a given local DOMAIN
 	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
-##
+
+tests:
+	${COMPOSE_BIN} -f docker-compose.yml run tests
+
+# Выполнение любых служебных операций внутри php контейнера, без необходимости установки локальных инструментов
+# make run CMD="yarn build"
+# make run CMD="cd public; yarn install"
+run:
+	docker compose exec --user ${UID}:${GID} fpm /bin/bash -c 'cd /var/www/${PROJECT}; $(CMD)'
+run.cmd:
+	docker compose exec --user ${UID}:${GID} ${SERVICE} /bin/bash -c '$(CMD)'
+#  См. readme
+init:
+	docker compose exec ${SERVICE} /bin/bash -c 'addgroup -g ${GID} g${GID}; adduser -s /bin/bash -u ${UID} -g ${GID} -D u${UID}'
+prune:
+	docker image prune -a
+web-user-create:
+	getent group web-group || sudo groupadd --gid ${WEB_GID} web-group \
+		&& getent passwd web-user || sudo useradd --shell /bin/bash --uid ${WEB_UID} --gid ${WEB_GID} -m web-user
+
+# БД: дампы, PMA
+mysql.create.db:
+	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
+		-e "CREATE DATABASE ${DB} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql.create.user:
+	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
+        -e "CREATE USER '${USER}'@'%' IDENTIFIED BY '${PASSWORD}'; GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'%'; FLUSH PRIVILEGES;"
+mysql.dump:
+	docker compose exec db mysqldump \
+		-u root -p${MYSQL_ROOT_PASSWORD} \
+		--single-transaction \
+		${DB} > ${FILE}
+mysql.restore:
+	docker compose exec -T db mysql \
+		-u root -p${MYSQL_ROOT_PASSWORD} ${DB} < ${FILE}
+up.pma:
+	COMPOSE_PROFILES=pma ${COMPOSE_BIN} up -d
+down.pma:
+	COMPOSE_PROFILES=pma ${COMPOSE_BIN} down
