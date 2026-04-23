@@ -2,7 +2,8 @@
 include .env
 
 ifndef SERVICE
-override SERVICE=fpm
+#override SERVICE=fpm
+override SERVICE=
 endif
 
 ##
@@ -27,8 +28,10 @@ down: ## Stop docker hub services
 	${COMPOSE_BIN} down --remove-orphans
 ps: ## Print hub services status
 	${COMPOSE_BIN} ps
-logs: ## Show live logs
-	${COMPOSE_BIN} logs --tail=0 --follow
+recreate: ## Restart service with ENV variables updated
+	${COMPOSE_BIN} up -d --force-recreate ${SERVICE}
+logs: ## Show live logs - all/service
+	${COMPOSE_BIN} logs --tail=0 --follow ${SERVICE}
 
 # Перестроение образов контейнеров, в случае их обновления
 build: ## Build docker images
@@ -133,7 +136,4 @@ cert.local.install: ## Create local SSL certificate center
 	&& mkcert -install
 cert.local.create: ## Create SSL certificate for a given local DOMAIN
 	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
-
-tests:
-	${COMPOSE_BIN} -f docker-compose.yml run tests
-
+##
