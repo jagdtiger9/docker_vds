@@ -55,7 +55,7 @@ define perms
     && mkdir -p -m 0777 ${DATA_HOSTS} \
     && mkdir -p -m 0777 ${DATA_XDEBUG} \
     && mkdir -p -m 0777 ${NGINX_CACHE} && chmod g+s ${NGINX_CACHE} \
-    && mkdir -p -m 0777 ${DATA_LOG} && chmod g+s ${DATA_LOG} \
+    && mkdir -p -m 0777 ${DOCKER_LOG} && chmod g+s ${DOCKER_LOG} \
     && mkdir -p -m 0777 ${DATA_REDIS} \
     && mkdir -p -m 0777 ${DATA_RABBITMQ} \
     && mkdir -p -m 0777 ${DATA_PROMETHEUS} \

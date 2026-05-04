@@ -201,7 +201,7 @@ services:
         volumes:
             - ${DATA_MYSQL}:/var/lib/mysql
             - ${CONF_MYSQL}:/etc/my.cnf.d:ro
-            - ${DATA_LOG}:/var/log/mysql
+            - ${DOCKER_LOG}:/var/log/mysql
         ports:
             - "${DB_PORT_MAP:-127.0.0.1:65001:65001}"
         networks:
@@ -343,7 +343,7 @@ services:
             - TZ=${DEFAULT_TIME_ZONE}
         volumes:
             - ${CONF_LOG}:/config/syslog-ng.conf
-            - ${DATA_LOG}:/var/log #optional
+            - ${DOCKER_LOG}:/var/log #optional
         ports:
             - "127.0.0.1:514:5514/udp"
         #            - "601:6601/tcp"
@@ -357,16 +357,18 @@ services:
         container_name: logrotate
         profiles: [ main ]
         environment:
-            - LOGS_DIRECTORIES=/var/log/docker
+            - LOGS_DIRECTORIES=/var/log/*/*.log /var/log/*/*/*.log /var/log/*/*/*/*.log
             - LOGROTATE_INTERVAL=hourly
-            - LOGROTATE_CRONSCHEDULE=0 */20 * * * *
+            - LOGROTATE_CRONSCHEDULE=0/10 * * * * *
             - LOGROTATE_COPIES=${LOGROTATE_COPIES:-5}
             - LOGROTATE_SIZE=${LOGROTATE_SIZE:-1M}
             - LOGROTATE_COMPRESSION=compress
             - LOGROTATE_LOGFILE=/var/log/docker/logrotatecron.log
             - LOGROTATE_STATUSFILE=/var/log/docker/logrotate.status
         volumes:
-            - ${DATA_LOG}:/var/log/docker
+            - ${DOCKER_LOG}:/var/log/docker
+            - ${APP_LOG}:/var/log/app
+            - ${APP_LOG_1}:/var/log/app_1
         networks:
             - net
         restart: unless-stopped
