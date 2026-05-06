@@ -359,7 +359,7 @@ services:
         environment:
             - LOGS_DIRECTORIES=/var/log/*/*.log /var/log/*/*/*.log /var/log/*/*/*/*.log
             - LOGROTATE_INTERVAL=hourly
-            - LOGROTATE_CRONSCHEDULE=0/10 * * * * *
+            - LOGROTATE_CRONSCHEDULE=10 */15 * * * *
             - LOGROTATE_COPIES=${LOGROTATE_COPIES:-5}
             - LOGROTATE_SIZE=${LOGROTATE_SIZE:-1M}
             - LOGROTATE_COMPRESSION=compress
