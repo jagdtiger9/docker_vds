@@ -354,6 +354,13 @@ services:
 
     logrotate:
         image: blacklabelops/logrotate
+        build:
+            context: .
+            dockerfile: images/logrotate/Dockerfile
+            args:
+                CONTAINER_UID: ${UID:-1000}
+                CONTAINER_GID: ${GID:-1000}
+                LOGROTATE_VERSION: latest
         container_name: logrotate
         profiles: [ main ]
         environment:
