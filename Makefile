@@ -130,10 +130,10 @@ certbot.renew.dry: ## Test-update (no real update) SSL certificate for a given D
 
 cert.local.install: ## Create local SSL certificate center
 	sudo apt install libnss3-tools \
-	&& curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash -\
-    && /home/linuxbrew/.linuxbrew/bin/brew shellenv >> ${HOME}/.bash_profile \
-	&& brew install mkcert \
-	&& mkcert -install
+  	&& curl -Lo /tmp/mkcert https://github.com/FiloSottile/mkcert/releases/latest/download/mkcert-v1.4.4-linux-amd64 \
+  	&& chmod +x /tmp/mkcert && sudo mv /tmp/mkcert /usr/local/bin/mkcert \
+  	&& mkcert -install
+
 cert.local.create: ## Create SSL certificate for a given local DOMAIN
 	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
 ##

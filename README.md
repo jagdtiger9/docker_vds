@@ -137,6 +137,7 @@ Grafana dashboards:
 - 10991 (RabbitMQ)
 - 20719 (Angie)
 - 14900 (Nginx)
+- 13500 (Clickhouse) https://grafana.com/grafana/dashboards/13500-clickhouse-internal-exporter/
 
 ### mysql-exporter database user
 
