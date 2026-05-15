@@ -76,7 +76,7 @@ endef
 run: ## Run a command within PHP-FPM container, for ex: composer install
 	docker compose exec --user ${UID}:${GID} fpm /bin/bash -c 'cd /var/www/${PROJECT}; $(CMD)'
 nginx.reload: ## Reload proxy service, apply configuration changes
-	docker exec proxy ${PROXY_SERVER} -s reload\
+	docker exec proxy ${PROXY_SERVER} -s reload
 init:
 	docker compose exec ${SERVICE} /bin/bash -c 'addgroup -g ${GID} g${GID}; adduser -s /bin/bash -u ${UID} -g ${GID} -D u${UID}'
 web-user: ## Optional, create host user with the same uid as the web-user
