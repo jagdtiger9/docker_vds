@@ -176,8 +176,6 @@ services:
             PHP_VERSION: ${PHP_VERSION:-8.3}
             USER: ${WEB_UID:-0}
         volumes:
-            - /etc/passwd:/etc/passwd
-            - /etc/group:/etc/group
             - ${DATA_HOSTS}:/var/www
             - ${CONF_WORKER}:/etc/supervisor/conf.d/
         command: [ '/usr/bin/supervisord', '-c', '/etc/supervisord.conf' ]
