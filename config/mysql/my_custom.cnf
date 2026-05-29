@@ -47,10 +47,10 @@ key_buffer_size = 16M
 
 # === InnoDB Settings (8GB RAM - 5GB buffer pool ~62%) ===
 # 1G
-innodb_buffer_pool_size = 512M
+innodb_buffer_pool_size = 448M
 innodb_buffer_pool_instances = 1
 # Set .._log_file_size to 25 % of buffer pool size
-innodb_log_file_size = 128M
+innodb_redo_log_capacity = 96M
 innodb_log_buffer_size = 16M
 innodb_flush_log_at_trx_commit = 2
 innodb_flush_method = O_DIRECT
@@ -67,7 +67,6 @@ innodb_io_capacity = 200
 # --- REPLICATION BLOCK ---
 # Master-slave replication settings
 # For MySQL=>Tarantool replication
-binlog_format = ROW
 performance_schema=ON
 log-bin = mysql-bin
 server-id = 1

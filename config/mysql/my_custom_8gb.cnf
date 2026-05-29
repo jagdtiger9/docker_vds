@@ -51,7 +51,7 @@ key_buffer_size = 32M
 # === InnoDB Settings (8GB RAM - 5GB buffer pool ~62%) ===
 innodb_buffer_pool_size = 5G
 innodb_buffer_pool_instances = 5
-innodb_log_file_size = 1G
+innodb_redo_log_capacity = 1G
 innodb_log_buffer_size = 64M
 innodb_flush_log_at_trx_commit = 2
 innodb_flush_method = O_DIRECT
@@ -78,7 +78,6 @@ innodb_ft_min_token_size = 1
 innodb_ft_enable_stopword = OFF
 
 # === Replication ===
-binlog_format = ROW
 log-bin = mysql-bin
 server-id = 1
 sync_binlog = 1
