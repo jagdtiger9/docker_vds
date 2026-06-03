@@ -317,7 +317,7 @@ services:
             context: .
             dockerfile: ./images/sphinx3/Dockerfile
         container_name: sphinx
-        profiles: [ main ]
+        profiles: [ search ]
         volumes:
             - ${DATA_HOSTS}:/var/www
         networks:

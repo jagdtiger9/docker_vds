@@ -26,6 +26,8 @@ up: ## Start docker hub services
 	$(perms) && ${COMPOSE_BIN} up -d
 down: ## Stop docker hub services
 	${COMPOSE_BIN} down --remove-orphans
+down.profile: ## Stop docker hub profile services
+	${COMPOSE_BIN} --profile ${PROFILE} down --remove-orphans
 ps: ## Print hub services status
 	${COMPOSE_BIN} ps
 recreate: ## Restart service with ENV variables updated
