@@ -368,8 +368,8 @@ services:
             - LOGROTATE_COPIES=${LOGROTATE_COPIES:-5}
             - LOGROTATE_SIZE=${LOGROTATE_SIZE:-1M}
             - LOGROTATE_COMPRESSION=compress
-            - LOGROTATE_LOGFILE=/var/log/docker/logrotatecron.log
-            - LOGROTATE_STATUSFILE=/var/log/docker/logrotate.status.log
+            - LOGROTATE_LOGFILE=/dev/stdout
+            - LOGROTATE_STATUSFILE=/tmp/logrotate.status
         volumes:
             - ${DOCKER_LOG}:/var/log/docker
             - ${APP_LOG}:/var/log/app

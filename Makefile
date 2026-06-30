@@ -34,6 +34,8 @@ recreate: ## Restart service with ENV variables updated
 	${COMPOSE_BIN} up -d --force-recreate ${SERVICE}
 logs: ## Show live logs - all/service
 	${COMPOSE_BIN} logs --tail=0 --follow ${SERVICE}
+logs.clean: ## Remove logrotate .backup files from data/log/
+	find ${DOCKER_LOG} -name "*.backup" -delete
 
 # Перестроение образов контейнеров, в случае их обновления
 build: ## Build docker images
@@ -94,12 +96,12 @@ mysql.create.db: ## Create database
 mysql.create.user: ## Create database user
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
         -e "CREATE USER '${USER}'@'%' IDENTIFIED BY '${PASSWORD}'; GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'%'; FLUSH PRIVILEGES;"
-mysql.dump: ## Create database dump
+mysql.dump: ## Create database dump, use DB FILE
 	docker compose exec db mysqldump \
 		-u root -p${MYSQL_ROOT_PASSWORD} \
 		--single-transaction \
 		${DB} > ${FILE}
-mysql.restore: ## Restore database dump
+mysql.restore: ## Restore database dump, use DB and FILE
 	docker compose exec -T db mysql \
 		-u root -p${MYSQL_ROOT_PASSWORD} ${DB} < ${FILE}
 up.pma: ## PMA service UP
@@ -111,12 +113,12 @@ down.pma: ## PMA service DOWN
 ## —— Docker 🐳: Virtual hosts ————————————————————————————————————————————————————————————————
 # Добавление нового хоста
 # make new.host.https HOST="host.domain"
-new.host.https: ## Create new HTTPS virtual host
+new.host.https: ## Create new HTTPS virtual host for a given HOST
 	cp ./config/${PROXY_SERVER}/hosts/default.host.conf_https ${CONF_HOSTS}${HOST}.conf \
 	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
 # Добавление нового хоста на локальной машине без поддержки SSL
 # make new.host HOST="host"
-new.host: ## Create new HTTP virtual host
+new.host: ## Create new HTTP virtual host for a given HOST
 	cp ./config/${PROXY_SERVER}/hosts/default.host.conf_http ${CONF_HOSTS}${HOST}.conf \
 	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
 certbot.create: ## Create SSL certificate for a given DOMAIN
