@@ -18,21 +18,21 @@ help: ## Print this help screen
 ##  - CONF_HOSTS, DATA_HOSTS - virtual hosts options
 ## 2. Run: make build && make up
 ## 3. Run: make web-user (in case WEB_UID/WEB_GID differs from UID/GID)
-## 4. Open: http://localhost/ for more info about virtual hosts settings (fresh install only)
-## Detailed instructions: docs/INSTALL.md
+## 4. Open: http://localhost/ to get more info about virtual hosts settings (fresh install only)
+## ...more details: docs/INSTALL.md
 ##
 ## —— Docker 🐳: Service containers ————————————————————————————————————————————————————————————————
 up: ## Start docker hub services
 	$(perms) && ${COMPOSE_BIN} up -d
 down: ## Stop docker hub services
 	${COMPOSE_BIN} down --remove-orphans
-down.profile: ## Stop docker hub profile services
+down.profile: ## Stop docker hub profile services, [use: PROFILE=...,...]
 	${COMPOSE_BIN} --profile ${PROFILE} down --remove-orphans
 ps: ## Print hub services status
 	${COMPOSE_BIN} ps
-recreate: ## Restart service with ENV variables updated
+recreate: ## Restart service with ENV variables updated, [use: SERVICE]
 	${COMPOSE_BIN} up -d --force-recreate ${SERVICE}
-logs: ## Show live logs - all/service
+logs: ## Show live logs - all/service, [use: SERVICE(opt)]
 	${COMPOSE_BIN} logs --tail=0 --follow ${SERVICE}
 logs.clean: ## Remove logrotate .backup files from data/log/
 	find ${DOCKER_LOG} -name "*.backup" -delete
@@ -77,7 +77,7 @@ endef
 # Выполнение любых служебных операций внутри php контейнера, без необходимости установки локальных инструментов
 # make run CMD="yarn build"
 # make run CMD="cd public; yarn install"
-run: ## Run a command within PHP-FPM container, for ex: composer install
+run: ## Run a command within PHP-FPM container, for ex: composer install, [use: PROJECT(opt), CMD]
 	docker compose exec --user ${UID}:${GID} fpm /bin/bash -c 'cd /var/www/${PROJECT}; $(CMD)'
 nginx.reload: ## Reload proxy service, apply configuration changes
 	docker exec proxy ${PROXY_SERVER} -s reload
@@ -90,18 +90,18 @@ web-user: ## Optional, create host user with the same uid as the web-user
 ##
 ## —— Docker 🐳: Database management ————————————————————————————————————————————————————————————————
 # БД: дампы, PMA
-mysql.create.db: ## Create database
+mysql.create.db: ## Create database, [use: DB]
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
 		-e "CREATE DATABASE ${DB} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql.create.user: ## Create database user
+mysql.create.user: ## Create database user, [use: DB, USER, PASSWORD]
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
         -e "CREATE USER '${USER}'@'%' IDENTIFIED BY '${PASSWORD}'; GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'%'; FLUSH PRIVILEGES;"
-mysql.dump: ## Create database dump, use DB FILE
+mysql.dump: ## Create database dump, [use: DB, FILE]
 	docker compose exec db mysqldump \
 		-u root -p${MYSQL_ROOT_PASSWORD} \
 		--single-transaction \
 		${DB} > ${FILE}
-mysql.restore: ## Restore database dump, use DB and FILE
+mysql.restore: ## Restore database dump, [use: DB, FILE]
 	docker compose exec -T db mysql \
 		-u root -p${MYSQL_ROOT_PASSWORD} ${DB} < ${FILE}
 up.pma: ## PMA service UP
@@ -113,17 +113,17 @@ down.pma: ## PMA service DOWN
 ## —— Docker 🐳: Virtual hosts ————————————————————————————————————————————————————————————————
 # Добавление нового хоста
 # make new.host.https HOST="host.domain"
-new.host.https: ## Create new HTTPS virtual host for a given HOST
+new.host.https: ## Create new HTTPS virtual host for a given host, [use: HOST]
 	cp ./config/${PROXY_SERVER}/hosts/default.host.conf_https ${CONF_HOSTS}${HOST}.conf \
 	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
 # Добавление нового хоста на локальной машине без поддержки SSL
-# make new.host HOST="host"
+# make new.host HOST="host", [use: HOST]
 new.host: ## Create new HTTP virtual host for a given HOST
 	cp ./config/${PROXY_SERVER}/hosts/default.host.conf_http ${CONF_HOSTS}${HOST}.conf \
 	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
-certbot.create: ## Create SSL certificate for a given DOMAIN
+certbot.create: ## Create SSL certificate for a given DOMAIN, [use: DOMAIN]
 	docker compose run --rm certbot certonly --keep --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
-certbot.delete: ## Delete SSL certificate for a given DOMAIN
+certbot.delete: ## Delete SSL certificate for a given DOMAIN, [use: DOMAIN]
 	docker compose run --rm certbot delete --cert-name ${DOMAIN}
 # Задачка в крон для ежемесячной проверки-продления сертификатов
 # 17 05     16 * *     project_user   cd ~/work/docker && make certbot.renew && make nginx.reload && echo 'test' >> ~/certbot.log
@@ -138,6 +138,6 @@ cert.local.install: ## Create local SSL certificate center
   	&& chmod +x /tmp/mkcert && sudo mv /tmp/mkcert /usr/local/bin/mkcert \
   	&& mkcert -install
 
-cert.local.create: ## Create SSL certificate for a given local DOMAIN
+cert.local.create: ## Create SSL certificate for a given local DOMAIN, [use: DOMAIN]
 	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
 ##
