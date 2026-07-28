@@ -114,12 +114,12 @@ down.pma: ## PMA service DOWN
 # Добавление нового хоста
 # make new.host.https HOST="host.domain"
 new.host.https: ## Create new HTTPS virtual host for a given host, [use: HOST]
-	cp ./config/${PROXY_SERVER}/hosts/default.host.conf_https ${CONF_HOSTS}${HOST}.conf \
+	cp ./config/nginx/hosts/default.host.conf_https ${CONF_HOSTS}${HOST}.conf \
 	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
 # Добавление нового хоста на локальной машине без поддержки SSL
 # make new.host HOST="host", [use: HOST]
 new.host: ## Create new HTTP virtual host for a given HOST
-	cp ./config/${PROXY_SERVER}/hosts/default.host.conf_http ${CONF_HOSTS}${HOST}.conf \
+	cp ./config/nginx/hosts/default.host.conf_http ${CONF_HOSTS}${HOST}.conf \
 	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
 certbot.create: ## Create SSL certificate for a given DOMAIN, [use: DOMAIN]
 	docker compose run --rm certbot certonly --keep --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
