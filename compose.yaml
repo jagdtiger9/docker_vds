@@ -252,9 +252,9 @@ services:
         profiles: [ main ]
         user: ${UID:-1000}:${GID:-1000}
         volumes:
-            - ${DATA_REDIS}:/tmp/redis
-            - ${CONF_REDIS}:/usr/local/etc/redis/redis.conf
-        command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+            - ${REDIS_DATA}:/tmp/redis
+            - ${REDIS_CONF}:/usr/local/etc/redis/redis.conf
+        command: [ "redis-server", "/usr/local/etc/redis/redis.conf", "--maxmemory", "${REDIS_MAX_MEMORY:-512mb}", "--save", "${REDIS_SAVE_1:-3600 100}", "--save", "${REDIS_SAVE_2:-600 500}" ]
         networks:
             - net
         restart: unless-stopped
