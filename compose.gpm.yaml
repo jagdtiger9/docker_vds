@@ -5,7 +5,7 @@ services:
         container_name: logger
         profiles: [ logger ]
         volumes:
-            - ${CONF_LOGGER:-/dev/null}:/etc/logger/logger.ini
+            - ${LOGGER_CONFIG:-/dev/null}:/etc/logger/logger.ini
             - ${LOGGER_SERVICE_LOG:-/dev/null}:/var/log/logger
             - ${LOGGER_CLIENT_LOG:-/dev/null}:/var/logger
         networks:

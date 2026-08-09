@@ -40,7 +40,7 @@
     <ul>
         <li>
             Define the configuration files' directory in .env, for example:
-            <pre><code>[CONF_HOSTS]=./data/config/hosts/</code></pre>
+            <pre><code>[HOSTS_CONFIG]=./data/config/hosts/</code></pre>
         </li>
         <li>
             Add a new host configuration file:
@@ -48,16 +48,16 @@
         </li>
         <li>
             Define the path to the web host project files in .env, for example:
-            <pre><code>[DATA_HOSTS]=./data/web/</code></pre>
+            <pre><code>[HOSTS_DATA]=./data/web/</code></pre>
         </li>
         <li>
             Add a new host project directory with a minimal set of required files (public/index.html)
-            <pre><code>[DATA_HOSTS]/magicpro.local/public/index.html</code></pre>
+            <pre><code>[HOSTS_DATA]/magicpro.local/public/index.html</code></pre>
         </li>
     </ul>
 
     <h3>Directory structure example</h3>
-    <pre><code>[DATA_HOSTS]                 # DATA_HOSTS - all projects root
+    <pre><code>[HOSTS_DATA]                 # HOSTS_DATA - all projects root
 ├── site1.local/
 │   └── public/              # Document root
 │       └── index.php
@@ -68,7 +68,7 @@
     └── public/
         └── index.php
 
-[CONF_HOSTS]                 # CONF_HOSTS - nginx configs
+[HOSTS_CONFIG]                 # HOSTS_CONFIG - nginx configs
 ├── site1.local.conf
 ├── site2.local.conf
 └── magicpro.local.conf</code></pre>

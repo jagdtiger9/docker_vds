@@ -36,8 +36,8 @@ make new.host HOST="domain.local"        # HTTP only
 make new.host.https HOST="domain.com"    # HTTPS
 
 # SSL certificates
-make certbot.create DOMAIN=example.com   # Create certificate
-make certbot.renew                       # Renew certificates
+make cert.create DOMAIN=example.com   # Create certificate
+make cert.renew                       # Renew certificates
 make cert.local.install                  # Install mkcert for local dev
 make cert.local.create DOMAIN=app.local  # Create local certificate
 
@@ -68,8 +68,8 @@ Services are organized into profiles (configured via `COMPOSE_PROFILES` in `.env
 ### Key Services
 
 - **fpm** (php-fpm): PHP-FPM, built from `images/php-fpm/Dockerfile`, version controlled by `PHP_VERSION` (8.1-8.5)
-- **crontab** (php-cron): Cron jobs, reads tasks from `CONF_CRON` file
-- **workers** (php-worker): Supervisord-managed workers, configs in `CONF_WORKER` directory
+- **crontab** (cron): Cron jobs, reads tasks from `CONF_CRON` file
+- **workers** (php-worker): Supervisord-managed workers, configs in `WORKER_CONFIG` directory
 - **proxy**: Web server (nginx or angie based on `PROXY_SERVER` env var)
 - **db**: Percona MySQL 8, static IP 192.168.17.33
 - **sphinx**: Full-text search, static IP 192.168.17.22
@@ -78,7 +78,7 @@ Services are organized into profiles (configured via `COMPOSE_PROFILES` in `.env
 
 - `config/` - Service configurations (nginx, mysql, redis, prometheus, grafana, syslog, worker, cron)
 - `data/` - Persistent data (mysql, redis, logs, grafana, prometheus, certbot certificates)
-- `images/` - Custom Dockerfile builds (php-fpm, php-cron, php-worker, nodejs, sphinx)
+- `images/` - Custom Dockerfile builds (php-fpm, cron, php-worker, nodejs, sphinx)
 
 ### Network
 

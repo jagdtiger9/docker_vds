@@ -1,0 +1,14 @@
+# Cron tasks — one crontab entry per line.
+# Busybox crond syntax: minute hour day month weekday command
+#
+# ENV vars available: CRON_UID, CRON_GID, PHP_VERSION, MYSQL_ROOT_PASSWORD
+# DB host: db (Docker network), password: ${MYSQL_ROOT_PASSWORD}
+
+# Magicpro: CLI runner (every minute)
+* * * * *	D=/var/www/magicpro/public/vardata/log/crontab && mkdir -p -m 0777 $D && php /var/www/magicpro/cli.php >> $D/cron.log 2>&1
+
+# Cleanup syslog-ng *.backup files left after interrupted rotation (daily at 2:30)
+30 2 * * *	find /var/log/docker -name "*.backup" -mtime +1 -delete 2>&1
+
+# Albion: DB + config backup (daily at 3:00 AM)
+#0 3 * * *	dump-project /var/www/albion 2>&1

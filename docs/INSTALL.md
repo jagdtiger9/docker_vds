@@ -78,14 +78,14 @@ http://localhost/
 Define virtual host parameters in .env
 
 ```
-DATA_HOSTS=...path_to_your_host_project_files...
-CONF_HOSTS=...path_to_you_host_config_giles...
+HOSTS_DATA=...path_to_your_host_project_files...
+HOSTS_CONFIG=...path_to_you_host_config_giles...
 ```
 
 Example:
 ```
-DATA_HOSTS=./data/www/
-CONF_HOSTS=./data/config/hosts/
+HOSTS_DATA=./data/www/
+HOSTS_CONFIG=./data/config/hosts/
 ```
 
 ### Directory Structure
@@ -93,7 +93,7 @@ CONF_HOSTS=./data/config/hosts/
 
 
 ```
-[DATA_HOSTS]                 # DATA_HOSTS - all projects root
+[HOSTS_DATA]                 # HOSTS_DATA - all projects root
 ├── site1.local/
 │   └── public/              # Document root
 │       └── index.php
@@ -104,7 +104,7 @@ CONF_HOSTS=./data/config/hosts/
     └── public/
         └── index.php
 
-[CONF_HOSTS]                 # CONF_HOSTS - nginx configs
+[HOSTS_CONFIG]                 # HOSTS_CONFIG - nginx configs
 ├── site1.local.conf
 ├── site2.local.conf
 └── magicpro.local.conf
@@ -118,13 +118,13 @@ CONF_HOSTS=./data/config/hosts/
 # 1. Create nginx config
 make new.host HOST="magicpro.local"
 
-or create it manually and place in the [CONF_HOSTS] directory
+or create it manually and place in the [HOSTS_CONFIG] directory
 
 # 2. Create project directory
-mkdir -p [DATA_HOSTS]/magicpro.local/public
+mkdir -p [HOSTS_DATA]/magicpro.local/public
 
 # 3. Create index.php
-echo '<?php phpinfo();' > [DATA_HOSTS]/magicpro.local/public/index.php
+echo '<?php phpinfo();' > [HOSTS_DATA]/magicpro.local/public/index.php
 
 # 4. Add to /etc/hosts
 echo "127.0.0.1 magicpro.local" | sudo tee -a /etc/hosts
@@ -140,14 +140,14 @@ make nginx.reload
 make new.host.https HOST="example.com"
 
 # 2. Create project directory
-mkdir -p [DATA_HOSTS]/example.com/public
+mkdir -p [HOSTS_DATA]/example.com/public
 
 # 3. Temporarily configure for certbot (edit config)
 # Comment out SSL lines, keep only port 80 with acme-challenge
 
 # 4. Reload and create certificate
 make nginx.reload
-make certbot.create DOMAIN=example.com
+make cert.create DOMAIN=example.com
 
 # 5. Uncomment SSL lines in config and reload
 make nginx.reload

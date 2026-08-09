@@ -16,7 +16,7 @@ More details: [docs/INSTALL.md](docs/INSTALL.md)
 
 1. **Nginx**
 
-Конфиги nginx в директорию CONF_HOSTS
+Конфиги nginx в директорию HOSTS_CONFIG
 
 2. **Database**
 
@@ -56,7 +56,7 @@ mkdir -p -m 0777 /var/www/magicpro/public/vardata/log/crontab && /usr/bin/php /v
 
 ```bash
 # Проверка-обновление сертификатов, раз в месяц, 9-го числа
-20 05     09 * *     USER   cd ~/work/docker && make certbot.renew && make nginx.reload && echo `date` - OK >> ~/certbot.log
+20 05     09 * *     USER   cd ~/work/docker && make cert.renew && make nginx.reload && echo `date` - OK >> ~/certbot.log
 ```
 
 **Сертификаты для локальной разработки**

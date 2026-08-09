@@ -1,5 +1,6 @@
 .idea/
 .env
+.env.version
 /data/
 .cert/
 custom.yaml

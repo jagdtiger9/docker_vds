@@ -15,7 +15,7 @@ help: ## Print this help screen
 ## 1. Copy .env.example to .env and adjust settings:
 ##  - UID, GID - use your host user uid/gid: $ id -u; $ id -g
 ##  - MYSQL_ROOT_PASSWORD, RABBITMQ_PASSWORD, GRAFANA_PASSWORD
-##  - CONF_HOSTS, DATA_HOSTS - virtual hosts options
+##  - HOSTS_CONFIG, HOSTS_DATA - virtual hosts options
 ## 2. Run: make build && make up
 ## 3. Run: make web-user (in case WEB_UID/WEB_GID differs from UID/GID)
 ## 4. Open: http://localhost/ to get more info about virtual hosts settings (fresh install only)
@@ -46,6 +46,29 @@ pull: ## Pull remote docker images
 	${COMPOSE_BIN} pull
 prune: ## Remove unused images - free disc space
 	docker image prune -a
+cron.reload: ## Restart cron container to pick up crontab changes
+	${COMPOSE_BIN} up -d --force-recreate cron
+
+env.update: ## Apply pending .env migrations
+	@ver=$$(cat .env.version 2>/dev/null | sed 's/^0*//' || echo 0); \
+	[ -z "$$ver" ] && ver=0; \
+	latest=$$ver; \
+	for f in $$(ls config/env-migrations/*.sh 2>/dev/null | sort -V); do \
+		num=$$(basename $$f | cut -d_ -f1 | sed 's/^0*//'); \
+		[ -z "$$num" ] && num=0; \
+		if [ "$$num" -gt "$$ver" ]; then \
+			echo "  → applying $$(basename $$f)..."; \
+			bash "$$f" .env && latest=$$num || { echo "  ✗ failed"; exit 1; }; \
+		else \
+			echo "  ✓ $$(basename $$f) (already applied)"; \
+		fi; \
+	done; \
+	if [ "$$latest" -gt "$$ver" ]; then \
+		printf "%04d\n" "$$latest" > .env.version; \
+		echo "env.version → $$latest"; \
+	else \
+		echo "up to date"; \
+	fi
 
 perms:
 	$(perms)
@@ -55,21 +78,20 @@ perms:
 # https://medium.com/@nielssj/docker-volumes-and-file-system-permissions-772c1aee23ca
 # https://denibertovic.com/posts/handling-permissions-with-docker-volumes/
 define perms
-    mkdir -p -m 0777 ${DATA_MYSQL} \
-    && mkdir -p -m 0777 ${DATA_HOSTS} \
-    && mkdir -p -m 0777 ${DATA_XDEBUG} \
+    mkdir -p -m 0777 ${DB_DATA} \
+    && mkdir -p -m 0777 ${HOSTS_DATA} \
+    && mkdir -p -m 0777 ${XDEBUG_DATA} \
     && mkdir -p -m 0777 ${NGINX_CACHE} && chmod g+s ${NGINX_CACHE} \
     && mkdir -p -m 0777 ${DOCKER_LOG} && chmod g+s ${DOCKER_LOG} \
     && mkdir -p -m 0777 ${REDIS_DATA} \
-    && mkdir -p -m 0777 ${DATA_RABBITMQ} \
+    && mkdir -p -m 0777 ${RABBITMQ_DATA} \
     && mkdir -p -m 0777 ${DATA_PROMETHEUS} \
     && mkdir -p -m 0777 ${DATA_GRAFANA} \
+    && mkdir -p -m 0777 ${BACKUP_DATA} \
     && mkdir -p -m 0777 ${CERTBOT_WEB} \
     && mkdir -p -m 0777 ${CERTBOT_SSL} \
-    && mkdir -p -m 0777 ${CONF_HOSTS} \
-    && mkdir -p -m 0777 $$(echo ${CONF_CRON} | rev | cut -d"/" -f2- | rev) \
-    && touch ${CONF_CRON} \
-    && mkdir -p -m 0777 ${CONF_WORKER}
+    && mkdir -p -m 0777 ${HOSTS_CONFIG} \
+    && mkdir -p -m 0777 ${WORKER_CONFIG}
 endef
 
 ##
@@ -90,23 +112,23 @@ web-user: ## Optional, create host user with the same uid as the web-user
 ##
 ## —— Docker 🐳: Database management ————————————————————————————————————————————————————————————————
 # БД: дампы, PMA
-mysql.create.db: ## Create database, [use: DB]
+db.create: ## Create database, [use: DB]
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
 		-e "CREATE DATABASE ${DB} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql.create.user: ## Create database user, [use: DB, USER, PASSWORD]
+db.create.user: ## Create database user, [use: DB, USER, PASSWORD]
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
         -e "CREATE USER '${USER}'@'%' IDENTIFIED BY '${PASSWORD}'; GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'%'; FLUSH PRIVILEGES;"
-mysql.dump: ## Create database dump, [use: DB, FILE]
+db.dump: ## Create database dump, [use: DB, FILE]
 	docker compose exec db mysqldump \
 		-u root -p${MYSQL_ROOT_PASSWORD} \
 		--single-transaction \
 		${DB} > ${FILE}
-mysql.restore: ## Restore database dump, [use: DB, FILE]
+db.restore: ## Restore database dump, [use: DB, FILE]
 	docker compose exec -T db mysql \
 		-u root -p${MYSQL_ROOT_PASSWORD} ${DB} < ${FILE}
-up.pma: ## PMA service UP
+pma.up: ## PMA service UP
 	COMPOSE_PROFILES=pma ${COMPOSE_BIN} up -d
-down.pma: ## PMA service DOWN
+pma.down: ## PMA service DOWN
 	COMPOSE_PROFILES=pma ${COMPOSE_BIN} down
 
 ##
@@ -114,23 +136,23 @@ down.pma: ## PMA service DOWN
 # Добавление нового хоста
 # make new.host.https HOST="host.domain"
 new.host.https: ## Create new HTTPS virtual host for a given host, [use: HOST]
-	cp ./config/nginx/hosts/default.host.conf_https ${CONF_HOSTS}${HOST}.conf \
-	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
+	cp ./config/nginx/hosts/default.host.conf_https ${HOSTS_CONFIG}${HOST}.conf \
+	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${HOSTS_CONFIG}${HOST}.conf
 # Добавление нового хоста на локальной машине без поддержки SSL
 # make new.host HOST="host", [use: HOST]
 new.host: ## Create new HTTP virtual host for a given HOST
-	cp ./config/nginx/hosts/default.host.conf_http ${CONF_HOSTS}${HOST}.conf \
-	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${CONF_HOSTS}${HOST}.conf
-certbot.create: ## Create SSL certificate for a given DOMAIN, [use: DOMAIN]
-	docker compose run --rm certbot certonly --keep --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
-certbot.delete: ## Delete SSL certificate for a given DOMAIN, [use: DOMAIN]
-	docker compose run --rm certbot delete --cert-name ${DOMAIN}
+	cp ./config/nginx/hosts/default.host.conf_http ${HOSTS_CONFIG}${HOST}.conf \
+	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${HOSTS_CONFIG}${HOST}.conf
+cert.create: ## Create SSL certificate for a given DOMAIN, [use: DOMAIN]
+	docker compose run --rm --entrypoint certbot certbot certonly --keep --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
+cert.delete: ## Delete SSL certificate for a given DOMAIN, [use: DOMAIN]
+	docker compose run --rm --entrypoint certbot certbot delete --cert-name ${DOMAIN}
 # Задачка в крон для ежемесячной проверки-продления сертификатов
-# 17 05     16 * *     project_user   cd ~/work/docker && make certbot.renew && make nginx.reload && echo 'test' >> ~/certbot.log
-certbot.renew: ## Update SSL certificate for a given DOMAIN
-	docker compose run --rm certbot renew --webroot --webroot-path /var/www/certbot/
-certbot.renew.dry: ## Test-update (no real update) SSL certificate for a given DOMAIN
-	docker compose run --rm certbot renew --webroot --webroot-path /var/www/certbot/ --dry-run
+# 17 05     16 * *     project_user   cd ~/work/docker && make cert.renew && make nginx.reload && echo 'test' >> ~/certbot.log
+cert.renew: ## Update SSL certificate for a given DOMAIN
+	docker compose run --rm --entrypoint certbot certbot renew --webroot --webroot-path /var/www/certbot/
+cert.renew.dry: ## Test-update (no real update) SSL certificate for a given DOMAIN
+	docker compose run --rm --entrypoint certbot certbot renew --webroot --webroot-path /var/www/certbot/ --dry-run
 
 cert.local.install: ## Create local SSL certificate center
 	sudo apt install libnss3-tools \
