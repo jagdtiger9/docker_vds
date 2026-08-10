@@ -3,7 +3,7 @@ FROM jagdtiger/php-dev-env-git:php${php_version}
 LABEL org.opencontainers.image.authors="gimatov@gmail.com"
 
 # crond + database tools for dump/connect tasks
-RUN apk add --no-cache --update busybox-suid mariadb-client
+RUN apk add --no-cache --update busybox-suid mariadb-client mariadb-connector-c
 
 COPY ./images/php/cron/entrypoint.sh /entrypoint.sh
 COPY ./images/php/cron/dump-project /usr/local/bin/dump-project

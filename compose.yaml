@@ -136,7 +136,7 @@ services:
                 syslog-facility: "daemon"
                 tag: "fpm"
 
-    crontab:
+    cron:
         build:
             context: .
             dockerfile: ./images/php/cron/Dockerfile
@@ -154,7 +154,7 @@ services:
             - ${XDEBUG_DATA}:/tmp/xdebug
             - ${DOCKER_LOG}:/var/log/docker
             - ${BACKUP_DATA:-./data/backup}:/var/backup
-            - ${CRON_CONFIG:-./config/cron/crontab}:/etc/crontabs/crontab:ro
+            - ${CRON_CONFIG:-./config/cron/crontab}:/tmp/crontab.in:ro
         networks:
             - net
         restart: unless-stopped
@@ -163,7 +163,7 @@ services:
             options:
                 syslog-address: "udp://127.0.0.1:514"
                 syslog-facility: "daemon"
-                tag: "crontab"
+                tag: "cron"
 
     workers:
         build:

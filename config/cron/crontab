@@ -4,11 +4,14 @@
 # ENV vars available: CRON_UID, CRON_GID, PHP_VERSION, MYSQL_ROOT_PASSWORD
 # DB host: db (Docker network), password: ${MYSQL_ROOT_PASSWORD}
 
+PATH=/usr/local/bin:/usr/bin:/bin
+SHELL=/bin/bash
+
 # Magicpro: CLI runner (every minute)
 * * * * *	D=/var/www/magicpro/public/vardata/log/crontab && mkdir -p -m 0777 $D && php /var/www/magicpro/cli.php >> $D/cron.log 2>&1
 
-# Cleanup syslog-ng *.backup files left after interrupted rotation (daily at 2:30)
-30 2 * * *	find /var/log/docker -name "*.backup" -mtime +1 -delete 2>&1
+# Cleanup syslog-ng *.backup files left after interrupted rotation (daily)
+27 06,18 * * *	find /var/log/docker -name "*.backup" -mtime +1 -delete 2>&1
 
-# Albion: DB + config backup (daily at 3:00 AM)
-#0 3 * * *	dump-project /var/www/albion 2>&1
+# Magicpro: DB + config backup (daily at 3:00 AM)
+17 03 * * *	dump-project /var/www/magicpro 2>&1
