@@ -15,6 +15,11 @@ set -euo pipefail
 PROJECT="${1:?Usage: $0 <project-root>}"
 ENV_FILE="${PROJECT%/}/dump.env"
 
+if [ ! -f "$ENV_FILE" ]; then
+    echo "[dump-project] ERROR: ${ENV_FILE} not found" >&2
+    exit 1
+fi
+
 source "$ENV_FILE"
 
 NAME=$(basename "$PROJECT")
