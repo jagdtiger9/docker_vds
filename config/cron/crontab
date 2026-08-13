@@ -14,4 +14,4 @@ SHELL=/bin/bash
 27 06,18 * * *	find /var/log/docker -name "*.backup" -mtime +1 -delete 2>&1
 
 # Magicpro: DB + config backup (daily at 3:00 AM)
-17 03 * * *	dump-project /var/www/magicpro 2>&1
+17 03 * * *	dump-project magicpro 2>&1

@@ -155,6 +155,7 @@ services:
             - ${DOCKER_LOG}:/var/log/docker
             - ${BACKUP_DATA:-./data/backup}:/var/backup
             - ${CRON_CONFIG:-./config/cron/crontab}:/tmp/crontab.in:ro
+            - ${CRON_DUMP_PROJECTS:-./config/cron/projects}:/etc/cron/projects:ro
         networks:
             - net
         restart: unless-stopped

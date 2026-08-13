@@ -49,7 +49,7 @@ prune: ## Remove unused images - free disc space
 cron.reload: ## Restart cron container to pick up crontab changes
 	${COMPOSE_BIN} up -d --force-recreate cron
 
-env.update: ## Apply pending .env migrations
+env.migrate: ## Apply pending .env migrations
 	@ver=$$(cat .env.version 2>/dev/null | sed 's/^0*//' || echo 0); \
 	[ -z "$$ver" ] && ver=0; \
 	latest=$$ver; \

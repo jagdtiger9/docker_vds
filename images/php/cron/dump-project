@@ -1,19 +1,19 @@
 #!/bin/bash
 # dump-project — DB dump + config backup for a single project.
-# Usage: dump-project <project-root>
+# Usage: dump-project <project-name>
 #
-# Sources <project-root>/dump.env which must define:
+# Sources /etc/cron/dump/<name>.env which must define:
 #   DB_NAME          Database name
 #   RETENTION_DAYS   Delete dumps older than this
-#   CONFIG_PATHS     Space-separated paths relative to project root
+#   CONFIG_PATHS     Space-separated paths relative to /var/www/<name>
 #
 # Backups are stored in /var/backup/<project-name>/.
 # Expects MYSQL_ROOT_PASSWORD in the environment.
 
 set -euo pipefail
 
-PROJECT="${1:?Usage: $0 <project-root>}"
-ENV_FILE="${PROJECT%/}/dump.env"
+NAME="${1:?Usage: $0 <project-name>}"
+ENV_FILE="/etc/cron/projects/${NAME}.env"
 
 if [ ! -f "$ENV_FILE" ]; then
     echo "[dump-project] ERROR: ${ENV_FILE} not found" >&2
@@ -22,7 +22,7 @@ fi
 
 source "$ENV_FILE"
 
-NAME=$(basename "$PROJECT")
+DATA_DIR="/var/www/${NAME}"
 BACKUP_DIR="/var/backup/${NAME}"
 DATE=$(date +%Y%m%d_%H%M)
 mkdir -p "$BACKUP_DIR"
@@ -37,7 +37,7 @@ mariadb-dump -h db -u root -p"${MYSQL_ROOT_PASSWORD}" \
 
 # Config dump
 # shellcheck disable=SC2086
-tar czf "${BACKUP_DIR}/config_${DATE}.tar.gz" -C "$PROJECT" $CONFIG_PATHS
+tar czf "${BACKUP_DIR}/config_${DATE}.tar.gz" -C "$DATA_DIR" $CONFIG_PATHS
 
 # Rotate
 find "$BACKUP_DIR" -mtime "+${RETENTION_DAYS}" -delete
