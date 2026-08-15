@@ -111,7 +111,7 @@ services:
                 tag: "redis-exporter"
 
     cadvisor:
-        image: gcr.io/cadvisor/cadvisor:v0.52.0
+        image: gcr.io/cadvisor/cadvisor:latest
         container_name: cadvisor
         profiles: [ metrics ]
         volumes:
@@ -121,10 +121,13 @@ services:
             - /var/lib/docker/:/var/lib/docker:ro
             - /dev/disk/:/dev/disk:ro
             #- /var/run/docker.sock:/var/run/docker.sock:ro  # Only needed on Docker Desktop for Mac
+            # Add these lines for newer Docker engines:
+            - /run/containerd/containerd.sock:/run/containerd/containerd.sock:ro
+            - /var/lib/containerd:/var/lib/containerd:ro
         command:
             - '--housekeeping_interval=15s'
             - '--docker_only=true'
-            - '--disable_metrics=disk,network,tcp,udp,percpu,sched,process'
+            - '--disable_metrics=${CADVISOR_DISABLE_METRICS}'
         expose:
             - 8080
         networks:
