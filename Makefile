@@ -26,17 +26,12 @@ up: ## Start docker hub services
 	$(perms) && ${COMPOSE_BIN} up -d
 down: ## Stop docker hub services
 	${COMPOSE_BIN} down --remove-orphans
+up.profile: ## Start docker hub profile services, [use: PROFILE=...,...]
+	${COMPOSE_BIN} --profile ${PROFILE} up -d
 down.profile: ## Stop docker hub profile services, [use: PROFILE=...,...]
 	${COMPOSE_BIN} --profile ${PROFILE} down --remove-orphans
 ps: ## Print hub services status
 	${COMPOSE_BIN} ps
-recreate: ## Restart service with ENV variables updated, [use: SERVICE]
-	${COMPOSE_BIN} up -d --force-recreate ${SERVICE}
-logs: ## Show live logs - all/service, [use: SERVICE(opt)]
-	${COMPOSE_BIN} logs --tail=0 --follow ${SERVICE}
-logs.clean: ## Remove logrotate .backup files from data/log/
-	find ${DOCKER_LOG} -name "*.backup" -delete
-
 # Перестроение образов контейнеров, в случае их обновления
 build: ## Build docker images
 	${COMPOSE_BIN} build
@@ -46,8 +41,8 @@ pull: ## Pull remote docker images
 	${COMPOSE_BIN} pull
 prune: ## Remove unused images - free disc space
 	docker image prune -a
-cron.reload: ## Restart cron container to pick up crontab changes
-	${COMPOSE_BIN} up -d --force-recreate cron
+recreate: ## Restart service with ENV variables updated, [use: SERVICE]
+	${COMPOSE_BIN} up -d --force-recreate ${SERVICE}
 
 env.migrate: ## Apply pending .env migrations
 	@ver=$$(cat .env.version 2>/dev/null | sed 's/^0*//' || echo 0); \
@@ -101,8 +96,14 @@ endef
 # make run CMD="cd public; yarn install"
 run: ## Run a command within PHP-FPM container, for ex: composer install, [use: PROJECT(opt), CMD]
 	docker compose exec --user ${UID}:${GID} fpm /bin/bash -c 'cd /var/www/${PROJECT}; $(CMD)'
+logs: ## Show live logs - all/service, [use: SERVICE(opt)]
+	${COMPOSE_BIN} logs --tail=0 --follow ${SERVICE}
+logs.clean: ## Remove logrotate .backup files from data/log/
+	find ${DOCKER_LOG} -name "*.backup" -delete
 nginx.reload: ## Reload proxy service, apply configuration changes
 	docker exec proxy ${PROXY_SERVER} -s reload
+cron.reload: ## Restart cron container to pick up crontab changes
+	${COMPOSE_BIN} up -d --force-recreate cron
 init:
 	docker compose exec ${SERVICE} /bin/bash -c 'addgroup -g ${GID} g${GID}; adduser -s /bin/bash -u ${UID} -g ${GID} -D u${UID}'
 web-user: ## Optional, create host user with the same uid as the web-user
@@ -112,6 +113,10 @@ web-user: ## Optional, create host user with the same uid as the web-user
 ##
 ## —— Docker 🐳: Database management ————————————————————————————————————————————————————————————————
 # БД: дампы, PMA
+# Выполнение произвольного SQL запроса к БД
+# make db.exec SQL="SHOW DATABASES;"
+db.exec: ## Execute arbitrary SQL query in db service, [use: SQL]
+	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e "${SQL}"
 db.create: ## Create database, [use: DB]
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
 		-e "CREATE DATABASE ${DB} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
