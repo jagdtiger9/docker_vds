@@ -14,22 +14,24 @@ config/cron/
 
 ## Adding a new project for backup
 
-All projects live in `/var/www/<project-name>` — and are accessible by this path to: php, worker, cron.
+All projects live in `HOSTS_DATA` that is mapped to `/var/www/<project-name>` within containers: php, worker, cron.
 
 > Any configuration changes made by the user should not be placed in files under Git control.
-> Put it in the data/ directory
+
+So if you need to modify backup settings or add any new projects put it all in a custom 'data/' directory defined in the ENV.
+For example:
 
 `CRON_CONFIG=./data/config/cron/crontab
 CRON_DUMP_PROJECTS=./config/cron/projects/`
 
-### 1. Create a project dump config
+### 1. Create/modify a project dump config
 
 `data/config/cron/projects/<project-name>.env`:
 
 ```bash
 DB_NAME=<db-name>
 RETENTION_DAYS=7
-CONFIG_PATHS="var/data/ .env config/"
+CONFIG_PATHS=".env ./config/"
 ```
 
 | Key              | Description                                                                                  |

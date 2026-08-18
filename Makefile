@@ -167,4 +167,17 @@ cert.local.install: ## Create local SSL certificate center
 
 cert.local.create: ## Create SSL certificate for a given local DOMAIN, [use: DOMAIN]
 	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
+
+##
+## —— Help 📖 ————————————————————————————————————————————————————————————————————————————————————————
+## Basic tips:
+##  - Project backup info: ./config/cron/README.md
+##  - Full installation guide: docs/INSTALL.md
+##  - If you only have one host, always use the name 'magicpro' for it
+##  - Any configuration changes made by the user should not be placed in files under Git control
+## Basic commands:
+##  - Start/stop services: make up / make down
+##  - Run command inside PHP container: make run CMD="composer install"
+##  - Watch live logs of a service: make logs SERVICE=fpm
+##  - Rebuild images without cache: make rebuild
 ##
