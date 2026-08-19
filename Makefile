@@ -169,7 +169,20 @@ cert.local.create: ## Create SSL certificate for a given local DOMAIN, [use: DOM
 	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
 
 ##
-## —— Help 📖 ————————————————————————————————————————————————————————————————————————————————————————
+## —— Debug 🔧 ————————————————————————————————————————————————————————————————————————————————————
+debug.env: ## Print container environment variables, [use: SERVICE]
+	docker inspect ${SERVICE} --format '{{.Name}}:{{range .Config.Env}}{{println}}  {{.}}{{end}}{{println}}'
+debug.ip: ## Print container IP address(es), [use: SERVICE]
+	docker inspect ${SERVICE} --format '{{.Name}}: {{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}{{println}}'
+debug.mounts: ## Print container mounts, [use: SERVICE]
+	docker inspect ${SERVICE} --format '{{.Name}}:{{range .Mounts}}{{println}}  {{.Type}}: {{.Source}} -> {{.Destination}} {{if .RW}}(rw){{else}}(ro){{end}}{{end}}{{println}}'
+debug.ports: ## Print published port mappings, [use: SERVICE]
+	docker port ${SERVICE}
+debug.state: ## Print container status, health, restarts, [use: SERVICE]
+	docker inspect ${SERVICE} --format '{{.Name}}: status={{.State.Status}} started={{.State.StartedAt}} restarts={{.RestartCount}} health={{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}}{{println}}'
+
+##
+## —— Tips 💡 ————————————————————————————————————————————————————————————————————————————————————————
 ## Basic tips:
 ##  - Project backup info: ./config/cron/README.md
 ##  - Full installation guide: docs/INSTALL.md
