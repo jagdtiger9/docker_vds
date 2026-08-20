@@ -149,6 +149,7 @@ services:
             CRON_UID: ${WEB_UID:-82}
             CRON_GID: ${WEB_GID:-82}
             MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            TZ: ${DEFAULT_TIME_ZONE}
         volumes:
             - ${HOSTS_DATA}:/var/www
             - ${XDEBUG_DATA}:/tmp/xdebug
