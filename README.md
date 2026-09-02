@@ -37,6 +37,17 @@ SET global general_log_file='/var/log/mysql/mysql.log';
 SET global log_output = 'file'; 
 ```
 
+**PostgreSQL** (профиль `database_pg`)
+
+```bash
+# Via local psql client (check env PG_PORT_MAP param)
+$ psql -h 127.0.0.1 -p 5432 -U postgres -d db_name < dump.sql
+
+# Docker container import
+$ docker cp dump_<date>.sql pg:/dump.sql
+$ docker exec -ti pg psql -U postgres -d db_name -f /dump.sql
+```
+
 3. **Cron**
 
 Для каждого проекта добавляем задачу в созданный после первого запуска файл CONF_CRON
@@ -133,6 +144,7 @@ Grafana dashboards:
 - 1860 (Node exporter)
 - 395, 10566 (Docker cadvisor)
 - 14057 (Mysql)
+- 9628 (Postgres)
 - 14091 (Redis)
 - 10991 (RabbitMQ)
 - 20719 (Angie)
@@ -144,4 +156,10 @@ Grafana dashboards:
 ```
 CREATE USER 'exporter'@'%' IDENTIFIED BY 'password' WITH MAX_USER_CONNECTIONS 3;
 GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'exporter'@'%';
+```
+
+### postgres-exporter database user
+
+```
+make pg.create.exporter PASSWORD=<PG_EXPORTER_PASSWORD>
 ```

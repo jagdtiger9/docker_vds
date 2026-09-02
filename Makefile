@@ -74,6 +74,7 @@ perms:
 # https://denibertovic.com/posts/handling-permissions-with-docker-volumes/
 define perms
     mkdir -p -m 0777 ${DB_DATA} \
+    && mkdir -p -m 0777 ${PG_DATA} \
     && mkdir -p -m 0777 ${HOSTS_DATA} \
     && mkdir -p -m 0777 ${XDEBUG_DATA} \
     && mkdir -p -m 0777 ${NGINX_CACHE} && chmod g+s ${NGINX_CACHE} \
@@ -131,6 +132,76 @@ db.dump: ## Create database dump, [use: DB, FILE]
 db.restore: ## Restore database dump, [use: DB, FILE]
 	docker compose exec -T db mysql \
 		-u root -p${MYSQL_ROOT_PASSWORD} ${DB} < ${FILE}
+# Postgres: pg сервис стартует с профилем database_pg
+# Выполнение произвольного SQL запроса к БД
+# make pg.exec DB=postgres SQL="SHOW server_version;"
+pg.exec: ## Execute arbitrary SQL query in pg service, [use: DB, SQL]
+	docker compose exec pg psql -U postgres -d ${DB} -c "${SQL}"
+pg.cli: ## Open psql shell in pg service, [use: DB]
+	docker compose exec pg psql -U postgres -d ${DB}
+pg.create: ## Create database, [use: DB]
+	docker compose exec pg createdb -U postgres -E UTF8 ${DB}
+pg.create.user: ## Create database user and owner, [use: DB, USER, PASSWORD]
+	docker compose exec pg psql -U postgres -c \
+		"CREATE USER ${USER} WITH PASSWORD '${PASSWORD}'; GRANT ALL PRIVILEGES ON DATABASE ${DB} TO ${USER}; ALTER DATABASE ${DB} OWNER TO ${USER};"
+pg.create.exporter: ## Create postgres_exporter user, [use: PASSWORD]
+	docker compose exec pg psql -U postgres -c \
+		"CREATE USER exporter WITH PASSWORD '${PASSWORD}'; GRANT pg_monitor TO exporter;"
+pg.dump: ## Create database dump (custom format), [use: DB, FILE]
+	docker compose exec pg pg_dump -U postgres -Fc ${DB} > ${FILE}
+pg.restore: ## Restore database dump, [use: DB, FILE]
+	docker compose exec -T pg pg_restore -U postgres --clean --if-exists -d ${DB} < ${FILE}
+# Перенос БД mysql → postgres: create database in pg first, then run pg.load
+# pgloader v4 (JDBC) сам умеет caching_sha2_password — root работает, отдельный юзер не нужен
+# --cast "type datetime drop not null": MySQL-нулевые даты приходят как NULL (zeroDateTimeBehavior),
+# без drop not null строки с 0000-00-00 отбрасывались бы NOT NULL-колонками
+MYSQL_USER ?= root
+MYSQL_PASSWORD ?= $(MYSQL_ROOT_PASSWORD)
+# Дефолт — суперюзер postgres; для миграции под юзером приложения (все объекты сразу его):
+# make pg.load DB=albion PG_USER=albion PG_PASSWORD=...
+PG_USER ?= $(POSTGRES_USER)
+PG_PASSWORD ?= $(POSTGRES_PASSWORD)
+pg.load: ## Migrate database from mysql to postgres via pgloader, [use: DB, MYSQL_USER, MYSQL_PASSWORD, PG_USER, PG_PASSWORD]
+	docker compose run --rm pgloader \
+		--with "quote identifiers" \
+		--with "schema only" \
+		--with "workers = 1" \
+		--with "prefetch rows = 10000" \
+		--with "batch rows = 10000" \
+		--cast "type datetime drop not null" \
+		"mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db/${DB}" \
+		"postgresql://${PG_USER}:${PG_PASSWORD}@pg/${DB}"
+# Данные в уже готовую схему (созданную миграциями приложения): не трогает DDL,
+# COPY в существующие таблицы, identity-последовательности поднимаются фазой Reset Sequences.
+# pgloader копирует таблицы по алфавиту, а FK в готовой схеме уже существуют — дочерние
+# таблицы падали бы раньше родительских, поэтому загрузка идёт с session_replication_role=replica
+# (FK не проверяются, транзакция pgloader'а умирает вместе с коннектом). Требует суперюзера:
+# PG_USER здесь должен быть postgres (дефолт); владелец таблиц при этом не меняется.
+# Перед загрузкой таблицы TRUNCATE — повторный запуск безопасен.
+pg.load.data: ## Migrate data only into existing schema, [use: DB, MYSQL_USER, MYSQL_PASSWORD, PG_USER, PG_PASSWORD]
+	docker compose exec -T pg psql -U ${PG_USER} -d ${DB} -tA \
+		-c "SELECT 'TRUNCATE ' || string_agg(format('%I.%I', schemaname, tablename), ', ') || ' RESTART IDENTITY CASCADE;' FROM pg_tables WHERE schemaname = '${DB}'" \
+		| docker compose exec -T pg psql -U ${PG_USER} -d ${DB}
+	# MySQL-нулевые даты (0000-00-00) приходят как NULL: колонки с datetime NOT NULL
+	# отбросят такие строки — снять NOT NULL вручную перед загрузкой, напр.:
+	# docker compose exec pg psql -U postgres -d ${DB} -c 'ALTER TABLE "albion"."User" ALTER COLUMN "lastActiveAt" DROP NOT NULL;'
+	docker compose run --rm pgloader \
+		--with "quote identifiers" \
+		--with "data only" \
+		--with "workers = 1" \
+		--with "prefetch rows = 10000" \
+		--with "batch rows = 10000" \
+		--cast "type datetime drop not null" \
+		--set session_replication_role TO replica \
+		"mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db/${DB}" \
+		"postgresql://${PG_USER}:${PG_PASSWORD}@pg/${DB}"
+# Если схему создавали под postgres (make pg.load без PG_USER), передайте объекты приложению:
+# make pg.owner DB=albion PG_USER=albion
+pg.owner: ## Reassign all DB objects to PG_USER (tables, sequences, schema), [use: DB, PG_USER]
+	docker compose exec -T pg psql -U postgres -d ${DB} -tA \
+		-c "SELECT format('ALTER %s %s OWNER TO %I;', CASE relkind WHEN 'S' THEN 'SEQUENCE' ELSE 'TABLE' END, oid::regclass, '${PG_USER}') FROM pg_class WHERE relnamespace = '${DB}'::regnamespace AND relkind IN ('r','S')" \
+		| docker compose exec -T pg psql -U postgres -d ${DB}
+	docker compose exec -T pg psql -U postgres -d ${DB} -c "ALTER SCHEMA ${DB} OWNER TO ${PG_USER}"
 pma.up: ## PMA service UP
 	COMPOSE_PROFILES=pma ${COMPOSE_BIN} up -d
 pma.down: ## PMA service DOWN

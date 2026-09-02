@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Docker Compose-based development environment for PHP web applications with supporting services (MySQL/Percona, Redis, RabbitMQ, Nginx/Angie, Node.js WebSockets) and monitoring stack (Prometheus, Grafana, various exporters).
+Docker Compose-based development environment for PHP web applications with supporting services (MySQL/Percona, PostgreSQL, Redis, RabbitMQ, Nginx/Angie, Node.js WebSockets) and monitoring stack (Prometheus, Grafana, various exporters).
 
 ## Common Commands
 
@@ -59,8 +59,9 @@ Services are organized into profiles (configured via `COMPOSE_PROFILES` in `.env
 - `proxy_ws` - Nginx/Angie with WebSocket support + Node.js
 - `main` - Core services: PHP-FPM, cron, workers, Redis, Memcached, RabbitMQ, Sphinx, syslog, logrotate
 - `database` - Percona MySQL (omit if using host MySQL)
-- `metrics` - Prometheus, Grafana, exporters (node, nginx, mysql, redis, cadvisor)
-- `pma` - phpMyAdmin
+- `database_pg` - PostgreSQL 17 (opt-in; add to `COMPOSE_PROFILES` to enable)
+- `metrics` - Prometheus, Grafana, exporters (node, nginx, mysql, postgres, redis, cadvisor)
+- `pma` - phpMyAdmin + Adminer (MySQL and PostgreSQL web UIs)
 - `debug` - Buggregator and debug tools
 - `prod` - Production-only services (certbot)
 - `logger` - Custom logger service
@@ -72,12 +73,14 @@ Services are organized into profiles (configured via `COMPOSE_PROFILES` in `.env
 - **workers** (php-worker): Supervisord-managed workers, configs in `WORKER_CONFIG` directory
 - **proxy**: Web server (nginx or angie based on `PROXY_SERVER` env var)
 - **db**: Percona MySQL 8, static IP 192.168.17.33
+- **pg**: PostgreSQL 17, static IP 192.168.17.34, profile `database_pg`
+- **pgloader**: One-shot MySQL→PostgreSQL migration tool, profile `migrate` (`make pg.load DB=...`)
 - **sphinx**: Full-text search, static IP 192.168.17.22
 
 ### Directory Structure
 
-- `config/` - Service configurations (nginx, mysql, redis, prometheus, grafana, syslog, worker, cron)
-- `data/` - Persistent data (mysql, redis, logs, grafana, prometheus, certbot certificates)
+- `config/` - Service configurations (nginx, mysql, postgres, redis, prometheus, grafana, syslog, worker, cron)
+- `data/` - Persistent data (mysql, postgres, redis, logs, grafana, prometheus, certbot certificates)
 - `images/` - Custom Dockerfile builds (php-fpm, cron, php-worker, nodejs, sphinx)
 
 ### Network

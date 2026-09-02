@@ -44,6 +44,7 @@ Edit `.env` and set secure passwords:
 
 ```ini
 MYSQL_ROOT_PASSWORD=your_secure_password
+POSTGRES_PASSWORD=your_secure_password
 RABBITMQ_USER=admin
 RABBITMQ_PASSWORD=your_rabbitmq_password
 GRAFANA_PASSWORD=your_grafana_password
@@ -225,6 +226,15 @@ DB_PORT_MAP=33006:3306
 Connect:
 ```bash
 mysql -h 127.0.0.1 --port=33006 --protocol=tcp -u root -p
+```
+
+### PostgreSQL Connection from Host
+
+Enable the `database_pg` profile in `.env` (`COMPOSE_PROFILES=...,database_pg`) and set `POSTGRES_PASSWORD`.
+
+Connect:
+```bash
+psql -h 127.0.0.1 -p 5432 -U postgres
 ```
 
 ### View Container Logs

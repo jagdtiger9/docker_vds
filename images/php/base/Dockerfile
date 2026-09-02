@@ -28,9 +28,11 @@ RUN set -eux; \
         sysvshm \
         opcache \
         pdo_mysql \
+        pdo_pgsql \
         pdo_sqlite \
         sockets \
-        zip \
+        zip
+RUN install-php-extensions \
         apcu \
         amqp \
         memcached \
@@ -47,6 +49,7 @@ RUN apk add --no-cache \
     git \
     unzip \
     mysql-client \
+    postgresql-client \
     make \
     sqlite \
     nodejs \

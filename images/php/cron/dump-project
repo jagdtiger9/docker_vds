@@ -4,11 +4,12 @@
 #
 # Sources /etc/cron/dump/<name>.env which must define:
 #   DB_NAME          Database name
+#   DB_ENGINE        mysql (default) or pgsql
 #   RETENTION_DAYS   Delete dumps older than this
 #   CONFIG_PATHS     Space-separated paths relative to /var/www/<name>
 #
 # Backups are stored in /var/backup/<project-name>/.
-# Expects MYSQL_ROOT_PASSWORD in the environment.
+# Expects MYSQL_ROOT_PASSWORD (and POSTGRES_USER/POSTGRES_PASSWORD for pgsql) in the environment.
 
 set -euo pipefail
 
@@ -30,10 +31,16 @@ mkdir -p "$BACKUP_DIR"
 echo "[dump-project] ${DB_NAME} → ${BACKUP_DIR}"
 
 # DB dump
-mariadb-dump -h db -u root -p"${MYSQL_ROOT_PASSWORD}" \
-    --ssl-verify-server-cert=0 \
-    --quote-names --single-transaction --no-tablespaces --extended-insert --add-drop-table \
-    "$DB_NAME" | gzip > "${BACKUP_DIR}/db_${DATE}.sql.gz"
+if [ "${DB_ENGINE:-mysql}" = "pgsql" ]; then
+    PGPASSWORD="${POSTGRES_PASSWORD}" pg_dump -h pg -U "${POSTGRES_USER:-postgres}" \
+        --clean --if-exists --no-owner --no-privileges \
+        "$DB_NAME" | gzip > "${BACKUP_DIR}/db_${DATE}.sql.gz"
+else
+    mariadb-dump -h db -u root -p"${MYSQL_ROOT_PASSWORD}" \
+        --ssl-verify-server-cert=0 \
+        --quote-names --single-transaction --no-tablespaces --extended-insert --add-drop-table \
+        "$DB_NAME" | gzip > "${BACKUP_DIR}/db_${DATE}.sql.gz"
+fi
 
 # Config dump
 # shellcheck disable=SC2086

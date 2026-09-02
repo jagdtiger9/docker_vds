@@ -30,6 +30,7 @@ CRON_DUMP_PROJECTS=./config/cron/projects/`
 
 ```bash
 DB_NAME=<db-name>
+DB_ENGINE=pgsql
 RETENTION_DAYS=7
 CONFIG_PATHS=".env ./config/"
 ```
@@ -37,6 +38,7 @@ CONFIG_PATHS=".env ./config/"
 | Key              | Description                                                                                  |
 |------------------|----------------------------------------------------------------------------------------------|
 | `DB_NAME`        | Database name to dump                                                                        |
+| `DB_ENGINE`      | `mysql` (default) or `pgsql` — which server to dump from (`db` vs `pg`)                      |
 | `RETENTION_DAYS` | Delete backups older than N days                                                             |
 | `CONFIG_PATHS`   | Space-separated paths relative to `/var/www/<project-name>`, archived into `config_*.tar.gz` |
 

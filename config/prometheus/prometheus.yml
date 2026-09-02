@@ -51,6 +51,10 @@ scrape_configs:
                 # The mysqld-exporter host:port
                 replacement: mysqld-exporter:9104
 
+    -   job_name: 'postgres'
+        static_configs:
+            -   targets: [ 'pg-exporter:9187' ]
+
     -   job_name: 'rabbitmq-exporter'
         scrape_interval: 30s
         scrape_timeout: 29s

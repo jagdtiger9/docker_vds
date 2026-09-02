@@ -149,6 +149,8 @@ services:
             CRON_UID: ${WEB_UID:-82}
             CRON_GID: ${WEB_GID:-82}
             MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            POSTGRES_USER: ${POSTGRES_USER:-postgres}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
             TZ: ${DEFAULT_TIME_ZONE}
         volumes:
             - ${HOSTS_DATA}:/var/www
@@ -222,6 +224,36 @@ services:
                 syslog-facility: "daemon"
                 tag: "{{.ImageName}}"
 
+    pg:
+        image: postgres:17-alpine
+        container_name: pg
+        profiles: [ database_pg ]
+        volumes:
+            # Direct datadir mount: the entrypoint chmods PGDATA to 0700 itself, so perms' 0777 is fine
+            # (parent-dir mount does NOT work — the image declares VOLUME /var/lib/postgresql/data)
+            - ${PG_DATA}:/var/lib/postgresql/data
+            - ${PG_CONFIG}:/etc/postgresql/conf.d:ro
+        ports:
+            - "${PG_PORT_MAP:-127.0.0.1:5432:5432}"
+        networks:
+            net:
+                ipv4_address: 192.168.17.34
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-postgres}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB:-postgres}
+            TZ: ${DEFAULT_TIME_ZONE}
+        command: [ "postgres", "-c", "config_file=/etc/postgresql/conf.d/postgresql.conf" ]
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres}" ]
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "{{.ImageName}}"
+
     phpmyadmin:
         image: phpmyadmin/phpmyadmin
         container_name: phpmyadmin
@@ -236,6 +268,30 @@ services:
             UPLOAD_LIMIT: ${UPLOAD_LIMIT}
             PMA_HOST: ${PMA_HOST}
         restart: unless-stopped
+
+    adminer:
+        image: adminer:6
+        container_name: adminer
+        profiles: [ pma ]
+        ports:
+            - "${ADMINER_PORT_MAP:-8082:8080}"
+        networks:
+            - net
+        environment:
+            ADMINER_DEFAULT_SERVER: ${ADMINER_DEFAULT_SERVER:-pg}
+        restart: unless-stopped
+
+    # One-shot migration tool: docker compose run --rm pgloader <source> <target>
+    pgloader:
+        build:
+            context: .
+            dockerfile: ./images/pgloader/Dockerfile
+        image: pgloader:local
+        container_name: pgloader
+        profiles: [ migrate ]
+        restart: "no"
+        networks:
+            - net
 
     memcached:
         image: memcached
