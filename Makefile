@@ -161,7 +161,15 @@ MYSQL_PASSWORD ?= $(MYSQL_ROOT_PASSWORD)
 # make pg.load DB=albion PG_USER=albion PG_PASSWORD=...
 PG_USER ?= $(POSTGRES_USER)
 PG_PASSWORD ?= $(POSTGRES_PASSWORD)
-pg.load: ## Migrate database from mysql to postgres via pgloader, [use: DB, MYSQL_USER, MYSQL_PASSWORD, PG_USER, PG_PASSWORD]
+# Имя целевой PG-БД (дефолт — как у исходной MySQL-БД). Схему в PG pgloader называет
+# именем исходной MySQL-БД, поэтому несколько MySQL-БД можно лить в одну PG-БД:
+# каждая MySQL-БД попадает в свою схему внутри PG_DB.
+PG_DB ?= $(DB)
+pg.create: ## Create target database in PG if missing, [use: PG_DB]
+	docker compose exec -T pg psql -U postgres -d postgres -tA \
+		-c "SELECT 'CREATE DATABASE ' || quote_ident('${PG_DB}') || ';' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${PG_DB}')" \
+		| docker compose exec -T pg psql -U postgres -d postgres
+pg.load: ## Migrate schema from mysql to postgres via pgloader, [use: DB, PG_DB, MYSQL_USER, MYSQL_PASSWORD, PG_USER, PG_PASSWORD]
 	docker compose run --rm pgloader \
 		--with "quote identifiers" \
 		--with "schema only" \
@@ -170,7 +178,7 @@ pg.load: ## Migrate database from mysql to postgres via pgloader, [use: DB, MYSQ
 		--with "batch rows = 10000" \
 		--cast "type datetime drop not null" \
 		"mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db/${DB}" \
-		"postgresql://${PG_USER}:${PG_PASSWORD}@pg/${DB}"
+		"postgresql://${PG_USER}:${PG_PASSWORD}@pg/${PG_DB}"
 # Данные в уже готовую схему (созданную миграциями приложения): не трогает DDL,
 # COPY в существующие таблицы, identity-последовательности поднимаются фазой Reset Sequences.
 # pgloader копирует таблицы по алфавиту, а FK в готовой схеме уже существуют — дочерние
@@ -178,13 +186,13 @@ pg.load: ## Migrate database from mysql to postgres via pgloader, [use: DB, MYSQ
 # (FK не проверяются, транзакция pgloader'а умирает вместе с коннектом). Требует суперюзера:
 # PG_USER здесь должен быть postgres (дефолт); владелец таблиц при этом не меняется.
 # Перед загрузкой таблицы TRUNCATE — повторный запуск безопасен.
-pg.load.data: ## Migrate data only into existing schema, [use: DB, MYSQL_USER, MYSQL_PASSWORD, PG_USER, PG_PASSWORD]
-	docker compose exec -T pg psql -U ${PG_USER} -d ${DB} -tA \
+pg.load.data: ## Migrate data only into existing schema, [use: DB, PG_DB, MYSQL_USER, MYSQL_PASSWORD, PG_USER, PG_PASSWORD]
+	docker compose exec -T pg psql -U ${PG_USER} -d ${PG_DB} -tA \
 		-c "SELECT 'TRUNCATE ' || string_agg(format('%I.%I', schemaname, tablename), ', ') || ' RESTART IDENTITY CASCADE;' FROM pg_tables WHERE schemaname = '${DB}'" \
-		| docker compose exec -T pg psql -U ${PG_USER} -d ${DB}
+		| docker compose exec -T pg psql -U ${PG_USER} -d ${PG_DB}
 	# MySQL-нулевые даты (0000-00-00) приходят как NULL: колонки с datetime NOT NULL
 	# отбросят такие строки — снять NOT NULL вручную перед загрузкой, напр.:
-	# docker compose exec pg psql -U postgres -d ${DB} -c 'ALTER TABLE "albion"."User" ALTER COLUMN "lastActiveAt" DROP NOT NULL;'
+	# docker compose exec pg psql -U postgres -d ${PG_DB} -c 'ALTER TABLE "albion"."User" ALTER COLUMN "lastActiveAt" DROP NOT NULL;'
 	docker compose run --rm pgloader \
 		--with "quote identifiers" \
 		--with "data only" \
@@ -194,14 +202,24 @@ pg.load.data: ## Migrate data only into existing schema, [use: DB, MYSQL_USER, M
 		--cast "type datetime drop not null" \
 		--set session_replication_role TO replica \
 		"mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db/${DB}" \
-		"postgresql://${PG_USER}:${PG_PASSWORD}@pg/${DB}"
+		"postgresql://${PG_USER}:${PG_PASSWORD}@pg/${PG_DB}"
 # Если схему создавали под postgres (make pg.load без PG_USER), передайте объекты приложению:
 # make pg.owner DB=albion PG_USER=albion
-pg.owner: ## Reassign all DB objects to PG_USER (tables, sequences, schema), [use: DB, PG_USER]
-	docker compose exec -T pg psql -U postgres -d ${DB} -tA \
-		-c "SELECT format('ALTER %s %s OWNER TO %I;', CASE relkind WHEN 'S' THEN 'SEQUENCE' ELSE 'TABLE' END, oid::regclass, '${PG_USER}') FROM pg_class WHERE relnamespace = '${DB}'::regnamespace AND relkind IN ('r','S')" \
-		| docker compose exec -T pg psql -U postgres -d ${DB}
-	docker compose exec -T pg psql -U postgres -d ${DB} -c "ALTER SCHEMA ${DB} OWNER TO ${PG_USER}"
+pg.owner: ## Reassign schema objects to PG_USER (schema, tables, sequences), [use: DB, PG_DB, PG_USER]
+	docker compose exec -T pg psql -U postgres -d ${PG_DB} -tA \
+		-c "SELECT format('ALTER SCHEMA %I OWNER TO %I;', '${DB}', '${PG_USER}') UNION ALL SELECT format('ALTER %s %s OWNER TO %I;', CASE relkind WHEN 'S' THEN 'SEQUENCE' ELSE 'TABLE' END, oid::regclass, '${PG_USER}') FROM pg_class WHERE relnamespace = '${DB}'::regnamespace AND relkind IN ('r','S')" \
+		| docker compose exec -T pg psql -U postgres -d ${PG_DB}
+# Мультитенант: список MySQL-БД в одну PG-БД, каждая в свою схему:
+#   make pg.create PG_DB=main
+#   make pg.load.tenants TENANTS="albion shop shop__aljerom" PG_DB=main OWNER=albion
+# Повторная миграция тенанта: DROP SCHEMA <tenant> CASCADE перед pg.load.tenants
+pg.load.tenants: ## Migrate each tenant DB (schema+data) into shared PG_DB, [use: TENANTS, PG_DB, OWNER(opt)]
+	@set -e; for t in $(TENANTS); do \
+		echo "=== tenant $$t"; \
+		$(MAKE) --no-print-directory pg.load DB=$$t PG_DB=$(PG_DB); \
+		$(MAKE) --no-print-directory pg.load.data DB=$$t PG_DB=$(PG_DB); \
+		test -z "$(OWNER)" || $(MAKE) --no-print-directory pg.owner DB=$$t PG_DB=$(PG_DB) PG_USER=$(OWNER); \
+	done
 pma.up: ## PMA service UP
 	COMPOSE_PROFILES=pma ${COMPOSE_BIN} up -d
 pma.down: ## PMA service DOWN
