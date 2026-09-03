@@ -132,6 +132,9 @@ db.dump: ## Create database dump, [use: DB, FILE]
 db.restore: ## Restore database dump, [use: DB, FILE]
 	docker compose exec -T db mysql \
 		-u root -p${MYSQL_ROOT_PASSWORD} ${DB} < ${FILE}
+
+##
+## —— Docker 🐳: Database management ————————————————————————————————————————————————————————————————
 # Postgres: pg сервис стартует с профилем database_pg
 # Выполнение произвольного SQL запроса к БД
 # make pg.exec DB=postgres SQL="SHOW server_version;"
@@ -165,10 +168,6 @@ PG_PASSWORD ?= $(POSTGRES_PASSWORD)
 # именем исходной MySQL-БД, поэтому несколько MySQL-БД можно лить в одну PG-БД:
 # каждая MySQL-БД попадает в свою схему внутри PG_DB.
 PG_DB ?= $(DB)
-pg.create: ## Create target database in PG if missing, [use: PG_DB]
-	docker compose exec -T pg psql -U postgres -d postgres -tA \
-		-c "SELECT 'CREATE DATABASE ' || quote_ident('${PG_DB}') || ';' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${PG_DB}')" \
-		| docker compose exec -T pg psql -U postgres -d postgres
 pg.load: ## Migrate schema from mysql to postgres via pgloader, [use: DB, PG_DB, MYSQL_USER, MYSQL_PASSWORD, PG_USER, PG_PASSWORD]
 	docker compose run --rm pgloader \
 		--with "quote identifiers" \
