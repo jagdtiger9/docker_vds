@@ -127,7 +127,8 @@ services:
         extra_hosts:
             - "host.docker.internal:host-gateway"
         networks:
-            - net
+            net:
+                ipv4_address: 192.168.17.25
         restart: unless-stopped
         logging:
             driver: "syslog"

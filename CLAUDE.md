@@ -68,10 +68,10 @@ Services are organized into profiles (configured via `COMPOSE_PROFILES` in `.env
 
 ### Key Services
 
-- **fpm** (php-fpm): PHP-FPM, built from `images/php-fpm/Dockerfile`, version controlled by `PHP_VERSION` (8.1-8.5)
+- **fpm** (php-fpm): PHP-FPM, static IP 192.168.17.25, built from `images/php-fpm/Dockerfile`, version controlled by `PHP_VERSION` (8.1-8.5)
 - **cron** (cron): Cron jobs, reads tasks from `CONF_CRON` file
 - **workers** (php-worker): Supervisord-managed workers, configs in `WORKER_CONFIG` directory
-- **proxy**: Web server (nginx or angie based on `PROXY_SERVER` env var)
+- **proxy**: Web server (nginx or angie based on `PROXY_SERVER` env var); serves a maintenance stub (503 + `config/nginx/default_host/maintenance.html`) whenever php-fpm is unreachable
 - **db**: Percona MySQL 8, static IP 192.168.17.33
 - **pg**: PostgreSQL 17, static IP 192.168.17.34, profile `database_pg`
 - **pgloader**: One-shot MySQL→PostgreSQL migration tool, profile `migrate` (`make pg.load DB=...`)

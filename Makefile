@@ -112,29 +112,61 @@ web-user: ## Optional, create host user with the same uid as the web-user
 		&& getent passwd web-user || sudo useradd --shell /bin/bash --uid ${WEB_UID} --gid ${WEB_GID} -m web-user
 
 ##
-## —— Docker 🐳: Database management ————————————————————————————————————————————————————————————————
+## —— Docker 🐳: Virtual hosts ————————————————————————————————————————————————————————————————
+# Добавление нового хоста
+# make new.host.https HOST="host.domain"
+new.host.https: ## Create new HTTPS virtual host for a given host, [use: HOST]
+	cp ./config/nginx/hosts/default.host.conf_https ${HOSTS_CONFIG}${HOST}.conf \
+	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${HOSTS_CONFIG}${HOST}.conf
+# Добавление нового хоста на локальной машине без поддержки SSL
+# make new.host HOST="host", [use: HOST]
+new.host: ## Create new HTTP virtual host for a given HOST
+	cp ./config/nginx/hosts/default.host.conf_http ${HOSTS_CONFIG}${HOST}.conf \
+	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${HOSTS_CONFIG}${HOST}.conf
+cert.create: ## Create SSL certificate for a given DOMAIN, [use: DOMAIN]
+	docker compose run --rm --entrypoint certbot certbot certonly --keep --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
+cert.delete: ## Delete SSL certificate for a given DOMAIN, [use: DOMAIN]
+	docker compose run --rm --entrypoint certbot certbot delete --cert-name ${DOMAIN}
+# Задачка в крон для ежемесячной проверки-продления сертификатов
+# 17 05     16 * *     project_user   cd ~/work/docker && make cert.renew && make nginx.reload && echo 'test' >> ~/certbot.log
+cert.renew: ## Update SSL certificate for a given DOMAIN
+	docker compose run --rm --entrypoint certbot certbot renew --webroot --webroot-path /var/www/certbot/
+cert.renew.dry: ## Test-update (no real update) SSL certificate for a given DOMAIN
+	docker compose run --rm --entrypoint certbot certbot renew --webroot --webroot-path /var/www/certbot/ --dry-run
+
+cert.local.install: ## Create local SSL certificate center
+	sudo apt install libnss3-tools \
+  	&& curl -Lo /tmp/mkcert https://github.com/FiloSottile/mkcert/releases/latest/download/mkcert-v1.4.4-linux-amd64 \
+  	&& chmod +x /tmp/mkcert && sudo mv /tmp/mkcert /usr/local/bin/mkcert \
+  	&& mkcert -install
+
+cert.local.create: ## Create SSL certificate for a given local DOMAIN, [use: DOMAIN]
+	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
+
+##
+## —— Mysql 🐬: Database management ————————————————————————————————————————————————————————————————
 # БД: дампы, PMA
 # Выполнение произвольного SQL запроса к БД
-# make db.exec SQL="SHOW DATABASES;"
-db.exec: ## Execute arbitrary SQL query in db service, [use: SQL]
+# make mysql.exec SQL="SHOW DATABASES;"
+mysql.exec: ## Execute arbitrary SQL query in db service, [use: SQL]
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e "${SQL}"
-db.create: ## Create database, [use: DB]
+mysql.create: ## Create database, [use: DB]
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
 		-e "CREATE DATABASE ${DB} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-db.create.user: ## Create database user, [use: DB, USER, PASSWORD]
+mysql.create.user: ## Create database user, [use: DB, USER, PASSWORD]
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
         -e "CREATE USER '${USER}'@'%' IDENTIFIED BY '${PASSWORD}'; GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'%'; FLUSH PRIVILEGES;"
-db.dump: ## Create database dump, [use: DB, FILE]
+mysql.dump: ## Create database dump, [use: DB, FILE]
 	docker compose exec db mysqldump \
 		-u root -p${MYSQL_ROOT_PASSWORD} \
 		--single-transaction \
 		${DB} > ${FILE}
-db.restore: ## Restore database dump, [use: DB, FILE]
+mysql.restore: ## Restore database dump, [use: DB, FILE]
 	docker compose exec -T db mysql \
 		-u root -p${MYSQL_ROOT_PASSWORD} ${DB} < ${FILE}
 
 ##
-## —— Docker 🐳: Database management ————————————————————————————————————————————————————————————————
+## —— Postgres 🐘: Database management ————————————————————————————————————————————————————————————————
 # Postgres: pg сервис стартует с профилем database_pg
 # Выполнение произвольного SQL запроса к БД
 # make pg.exec DB=postgres SQL="SHOW server_version;"
@@ -208,9 +240,16 @@ pg.owner: ## Reassign schema objects to PG_USER (schema, tables, sequences), [us
 	docker compose exec -T pg psql -U postgres -d ${PG_DB} -tA \
 		-c "SELECT format('ALTER SCHEMA %I OWNER TO %I;', '${DB}', '${PG_USER}') UNION ALL SELECT format('ALTER %s %s OWNER TO %I;', CASE relkind WHEN 'S' THEN 'SEQUENCE' ELSE 'TABLE' END, oid::regclass, '${PG_USER}') FROM pg_class WHERE relnamespace = '${DB}'::regnamespace AND relkind IN ('r','S')" \
 		| docker compose exec -T pg psql -U postgres -d ${PG_DB}
+# Для CREATE SCHEMA приложению нужен CREATE на БД (PG 15+ не даёт его не-владельцам);
+# либо сделайте роль владельцем БД: make pg.create.user DB=albion USER=albion PASSWORD=...
+pg.grant.create: ## Allow app role to CREATE SCHEMA in PG_DB, [use: PG_DB, PG_USER]
+	docker compose exec -T pg psql -U postgres -d postgres -c "GRANT CREATE ON DATABASE ${PG_DB} TO ${PG_USER};"
 # Мультитенант: список MySQL-БД в одну PG-БД, каждая в свою схему:
-#   make pg.create PG_DB=main
-#   make pg.load.tenants TENANTS="albion shop shop__aljerom" PG_DB=main OWNER=albion
+#   make pg.create PG_DB=albion
+#   make pg.load.tenants TENANTS="albion__a albion__b ..." PG_DB=albion OWNER=albion
+# Схема тенанта = имя исходной MySQL-БД (albion__<alias>) — так их ждёт приложение
+# (TenantConnectionWrapper: search_path = "albion__<alias>"). Миграции догоняются
+# в приложении: php bin/console app:tenant:migrate --all
 # Повторная миграция тенанта: DROP SCHEMA <tenant> CASCADE перед pg.load.tenants
 pg.load.tenants: ## Migrate each tenant DB (schema+data) into shared PG_DB, [use: TENANTS, PG_DB, OWNER(opt)]
 	@set -e; for t in $(TENANTS); do \
@@ -219,45 +258,13 @@ pg.load.tenants: ## Migrate each tenant DB (schema+data) into shared PG_DB, [use
 		$(MAKE) --no-print-directory pg.load.data DB=$$t PG_DB=$(PG_DB); \
 		test -z "$(OWNER)" || $(MAKE) --no-print-directory pg.owner DB=$$t PG_DB=$(PG_DB) PG_USER=$(OWNER); \
 	done
+
+##
+## —— Debug 🔧 ————————————————————————————————————————————————————————————————————————————————————
 pma.up: ## PMA service UP
 	COMPOSE_PROFILES=pma ${COMPOSE_BIN} up -d
 pma.down: ## PMA service DOWN
 	COMPOSE_PROFILES=pma ${COMPOSE_BIN} down
-
-##
-## —— Docker 🐳: Virtual hosts ————————————————————————————————————————————————————————————————
-# Добавление нового хоста
-# make new.host.https HOST="host.domain"
-new.host.https: ## Create new HTTPS virtual host for a given host, [use: HOST]
-	cp ./config/nginx/hosts/default.host.conf_https ${HOSTS_CONFIG}${HOST}.conf \
-	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${HOSTS_CONFIG}${HOST}.conf
-# Добавление нового хоста на локальной машине без поддержки SSL
-# make new.host HOST="host", [use: HOST]
-new.host: ## Create new HTTP virtual host for a given HOST
-	cp ./config/nginx/hosts/default.host.conf_http ${HOSTS_CONFIG}${HOST}.conf \
-	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${HOSTS_CONFIG}${HOST}.conf
-cert.create: ## Create SSL certificate for a given DOMAIN, [use: DOMAIN]
-	docker compose run --rm --entrypoint certbot certbot certonly --keep --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
-cert.delete: ## Delete SSL certificate for a given DOMAIN, [use: DOMAIN]
-	docker compose run --rm --entrypoint certbot certbot delete --cert-name ${DOMAIN}
-# Задачка в крон для ежемесячной проверки-продления сертификатов
-# 17 05     16 * *     project_user   cd ~/work/docker && make cert.renew && make nginx.reload && echo 'test' >> ~/certbot.log
-cert.renew: ## Update SSL certificate for a given DOMAIN
-	docker compose run --rm --entrypoint certbot certbot renew --webroot --webroot-path /var/www/certbot/
-cert.renew.dry: ## Test-update (no real update) SSL certificate for a given DOMAIN
-	docker compose run --rm --entrypoint certbot certbot renew --webroot --webroot-path /var/www/certbot/ --dry-run
-
-cert.local.install: ## Create local SSL certificate center
-	sudo apt install libnss3-tools \
-  	&& curl -Lo /tmp/mkcert https://github.com/FiloSottile/mkcert/releases/latest/download/mkcert-v1.4.4-linux-amd64 \
-  	&& chmod +x /tmp/mkcert && sudo mv /tmp/mkcert /usr/local/bin/mkcert \
-  	&& mkcert -install
-
-cert.local.create: ## Create SSL certificate for a given local DOMAIN, [use: DOMAIN]
-	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
-
-##
-## —— Debug 🔧 ————————————————————————————————————————————————————————————————————————————————————
 debug.env: ## Print container environment variables, [use: SERVICE]
 	docker inspect ${SERVICE} --format '{{.Name}}:{{range .Config.Env}}{{println}}  {{.}}{{end}}{{println}}'
 debug.ip: ## Print container IP address(es), [use: SERVICE]
