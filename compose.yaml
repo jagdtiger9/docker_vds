@@ -270,17 +270,24 @@ services:
             PMA_HOST: ${PMA_HOST}
         restart: unless-stopped
 
-    adminer:
-        image: adminer:6
-        container_name: adminer
+    pgadmin:
+        image: dpage/pgadmin4
+        container_name: pgadmin
         profiles: [ pma ]
         ports:
-            - "${ADMINER_PORT_MAP:-8082:8080}"
+            - "${PGADMIN_PORT_MAP:-8081:80}"
         networks:
             - net
         environment:
-            ADMINER_DEFAULT_SERVER: ${ADMINER_DEFAULT_SERVER:-pg}
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
         restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "{{.ImageName}}"
 
     # One-shot migration tool: docker compose run --rm pgloader <source> <target>
     pgloader:

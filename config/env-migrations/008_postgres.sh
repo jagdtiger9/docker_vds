@@ -1,5 +1,5 @@
 #!/bin/bash
-# Add Postgres service vars: POSTGRES block, PG_EXPORTER_PASSWORD, ADMINER_PORT_MAP
+# Add Postgres service vars: POSTGRES block, PG_EXPORTER_PASSWORD, PGADMIN_PORT_MAP
 # NOTE: COMPOSE_PROFILES is NOT touched — opting into the `database_pg` profile is a manual edit
 set -e
 
@@ -31,8 +31,8 @@ sed -i "/^###< DATABASE$/r $BLOCK" "$ENV"
 rm -f "$BLOCK"
 
 # Adminer in the pma profile
-grep -q '^ADMINER_PORT_MAP=' "$ENV" || \
-    sed -i '/^UPLOAD_LIMIT=/a ADMINER_PORT_MAP=8082:8080' "$ENV"
+grep -q '^PGADMIN_PORT_MAP=' "$ENV" || \
+    sed -i '/^UPLOAD_LIMIT=/a PGADMIN_PORT_MAP=8082:8080' "$ENV"
 
 # postgres_exporter credentials
 grep -q '^PG_EXPORTER_PASSWORD=' "$ENV" || \

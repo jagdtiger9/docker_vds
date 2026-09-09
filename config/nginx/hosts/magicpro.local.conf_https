@@ -52,6 +52,10 @@ server {
 	location ~ /\.ht {
 		deny all;
 	}
+    location ~ package\.json$ {
+        deny all;
+        return 404; # Optional: Hides the file's existence instead of showing a 403 Forbidden error
+    }
 	location = /favicon.ico {
 		try_files /favicon.ico =204;
 	}
