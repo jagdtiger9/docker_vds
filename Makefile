@@ -77,7 +77,6 @@ define perms
     && mkdir -p -m 0777 ${PG_DATA} \
     && mkdir -p -m 0777 ${HOSTS_DATA} \
     && mkdir -p -m 0777 ${XDEBUG_DATA} \
-    && mkdir -p -m 0777 ${NGINX_CACHE} && chmod g+s ${NGINX_CACHE} \
     && mkdir -p -m 0777 ${DOCKER_LOG} && chmod g+s ${DOCKER_LOG} \
     && mkdir -p -m 0777 ${REDIS_DATA} \
     && mkdir -p -m 0777 ${RABBITMQ_DATA} \
