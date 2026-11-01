@@ -1,0 +1,65 @@
+# Prod edge: on-demand TLS via Let's Encrypt.
+# NOTE: single-file bind mount — after editing this file on the host, restart
+# the container (docker compose restart caddy); a reload reads the stale mount.
+{
+	on_demand_tls {
+		ask http://proxy:8081/tls-check/{$ASK_TOKEN}
+	}
+}
+
+# Fixed domains — explicit blocks, normal TLS issuance, no ask gate.
+# Separate blocks so one domain's DNS/validation problem can't stall the
+# others' cert (a shared block would mean one multi-SAN cert, all-or-nothing).
+# Each is routed by the same angie proxy (Host passthrough picks the vhost).
+# DNS must resolve to this server and port 80 must be reachable before rollout.
+some.domain.ru {
+	reverse_proxy https://proxy:443 {
+		header_up Host {http.request.host}
+		transport http {
+			versions 1.1
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+other.domain.ru {
+	reverse_proxy https://proxy:443 {
+		header_up Host {http.request.host}
+		transport http {
+			versions 1.1
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+https:// {
+	tls {
+		on_demand
+	}
+	# Talk to proxy over its own TLS, not port 80: prod host configs redirect
+	# port 80 to https (a 301 loop through Caddy). As in dev, force HTTP/1.1 so
+	# angie picks the vhost per request by Host (on a multiplexed h2 connection
+	# the vhost is pinned per connection, serving one tenant to all), and skip
+	# verification on the internal hop (SNI is "proxy", not the tenant domain).
+	reverse_proxy https://proxy:443 {
+		header_up Host {http.request.host}
+		transport http {
+			versions 1.1
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+# Staging smoke test (add during rollout, remove after):
+# https://test-tenant.example.com {
+# 	tls {
+# 		ca https://acme-staging-v02.api.letsencrypt.org/directory
+# 	}
+# 	reverse_proxy https://proxy:443 {
+# 		header_up Host {http.request.host}
+# 		transport http {
+# 			versions 1.1
+# 			tls_insecure_skip_verify
+# 		}
+# 	}
+# }

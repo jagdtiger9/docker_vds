@@ -3,7 +3,6 @@ ARG PHP_VERSION=8.3
 # Based on official PHP FPM Alpine image
 FROM php:${PHP_VERSION}-fpm-alpine
 LABEL org.opencontainers.image.authors="gimatov@gmail.com"
-#php:8.4.27-fpm-alpine3.24
 
 # Install PHP extensions and runtime tools in single layer
 # install-php-extensions handles build deps automatically and cleans up after itself

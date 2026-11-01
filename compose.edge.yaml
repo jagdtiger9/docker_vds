@@ -1,0 +1,48 @@
+# Opt-in TLS edge: Caddy fronts the proxy on host 80/443 and issues on-demand
+# certificates for tenant domains (ask endpoint = the app, see config/caddy/).
+#
+# Enable per instance by adding this file to COMPOSE_FILE in .env:
+#   COMPOSE_FILE=compose.yaml:compose.edge.yaml:compose.metrics.yaml:...
+# Requires the proxy or proxy_ws profile. Without this file the stack behaves
+# exactly as before: the proxy publishes host 80/443 itself.
+services:
+    # Caddy owns 80/443 — drop them from proxy/proxy_ws. These services inherit
+    # ports from the nginx/angie bases via extends, so the override must be
+    # declared here on the running services, not on the bases.
+    proxy:
+        ports: !override [ ]
+    proxy_ws:
+        ports: !override
+            # WS HTTP/S INFO PORT
+            - "8085:8085"
+            - "8485:8485"
+            # WS/WSS PORT
+            - "8033:8033"
+            - "8433:8433"
+
+    # TLS edge with on-demand certificates for tenant domains:
+    # one catch-all site, issuance authorized by the app via the ask endpoint
+    # (see config/caddy/Caddyfile* and config/nginx/hosts/internal.ask.conf*)
+    caddy:
+        image: caddy:2-alpine
+        container_name: caddy
+        profiles: [ proxy, proxy_ws ]
+        environment:
+            - ASK_TOKEN=${ASK_TOKEN}
+        volumes:
+            - ${CADDYFILE:-./config/caddy/Caddyfile}:/etc/caddy/Caddyfile:ro
+            - ${CADDY_DATA}:/data
+        ports:
+            - "80:80"
+            - "443:443"
+            - "443:443/udp"
+        networks:
+            net:
+                ipv4_address: 192.168.17.26
+        restart: unless-stopped
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: "udp://127.0.0.1:514"
+                syslog-facility: "daemon"
+                tag: "caddy"

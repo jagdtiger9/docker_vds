@@ -86,6 +86,7 @@ define perms
     && mkdir -p -m 0777 ${CERTBOT_WEB} \
     && mkdir -p -m 0777 ${CERTBOT_SSL} \
     && mkdir -p -m 0777 ${HOSTS_CONFIG} \
+    && mkdir -p -m 0777 $(or $(CADDY_DATA),./data/caddy/) \
     && mkdir -p -m 0777 ${WORKER_CONFIG}
 endef
 
@@ -102,6 +103,11 @@ logs.clean: ## Remove logrotate .backup files from data/log/
 	find ${DOCKER_LOG} -name "*.backup" -delete
 nginx.reload: ## Reload proxy service, apply configuration changes
 	docker exec proxy ${PROXY_SERVER} -s reload
+caddy.reload: ## Reload Caddy configuration
+	# NOTE: works only for in-place edits; if the Caddyfile was replaced on the
+	# host (single-file bind mount, inode swap), restart instead:
+	# docker restart caddy
+	docker exec caddy caddy reload --config /etc/caddy/Caddyfile
 cron.reload: ## Restart cron container to pick up crontab changes
 	${COMPOSE_BIN} up -d --force-recreate cron
 init:
@@ -133,14 +139,28 @@ cert.renew: ## Update SSL certificate for a given DOMAIN
 cert.renew.dry: ## Test-update (no real update) SSL certificate for a given DOMAIN
 	docker compose run --rm --entrypoint certbot certbot renew --webroot --webroot-path /var/www/certbot/ --dry-run
 
+# mkcert is no needed to create certs for HTTP/S domains if using Caddy
+# Caddy's dev CA onboard them all (see cert.local.caddy.trust). It remains for the WebSocket ports (8485/8433),
+# which angie still serves with per-domain certs.
 cert.local.install: ## Create local SSL certificate center
 	sudo apt install libnss3-tools \
   	&& curl -Lo /tmp/mkcert https://github.com/FiloSottile/mkcert/releases/latest/download/mkcert-v1.4.4-linux-amd64 \
   	&& chmod +x /tmp/mkcert && sudo mv /tmp/mkcert /usr/local/bin/mkcert \
   	&& mkcert -install
 
+# In case Caddy is on it is still needed for the WS ports (8485/8433) — anything on 80/443 gets a cert from Caddy automatically
 cert.local.create: ## Create SSL certificate for a given local DOMAIN, [use: DOMAIN]
 	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN}
+cert.local.create.wildcard: ## Create wildcard SSL certificate for a given local DOMAIN, [use: DOMAIN]
+	mkdir -p .cert && mkcert -key-file ./.cert/${DOMAIN}.key -cert-file ./.cert/${DOMAIN}.crt ${DOMAIN} "*.${DOMAIN}"
+# CAROOT points mkcert at Caddy's root, so `mkcert -install` installs Caddy's dev CA
+# into the system store + Chrome/Firefox instead of mkcert's own CA.
+# Needs sudo and an interactive terminal — run as: ! make cert.local.caddy.trust
+cert.local.caddy.trust: ## Trust Caddy's dev CA on this host (system store + browsers)
+	docker compose exec caddy caddy trust \
+	&& docker compose cp caddy:/data/caddy/pki/authorities/local/root.crt /tmp/caddy-ca-root.crt \
+	&& mkdir -p /tmp/caddy-ca && cp /tmp/caddy-ca-root.crt /tmp/caddy-ca/rootCA.pem \
+	&& CAROOT=/tmp/caddy-ca mkcert -install
 
 ##
 ## —— Mysql 🐬: Database management ————————————————————————————————————————————————————————————————

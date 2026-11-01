@@ -3,6 +3,8 @@ volumes:
     redis:
     # Nodejs
     nodejs:
+    # PG admin
+    pgadmin:
 
 services:
     # Helper service, must not be run
@@ -83,6 +85,9 @@ services:
         profiles: [ proxy ]
         extends:
             service: ${PROXY_SERVER:-angie}
+
+    # TLS edge (Caddy) lives in compose.edge.yaml — opt-in per instance:
+    # add that file to COMPOSE_FILE in .env to enable on-demand tenant certs.
 
     #https://mindsers.blog/en/post/https-using-nginx-certbot-docker/
     certbot:
@@ -275,6 +280,9 @@ services:
         image: dpage/pgadmin4
         container_name: pgadmin
         profiles: [ pma ]
+        volumes:
+            # Именно этот путь нужно сохранять
+            - pgadmin:/var/lib/pgadmin
         ports:
             - "${PGADMIN_PORT_MAP:-8081:80}"
         networks:

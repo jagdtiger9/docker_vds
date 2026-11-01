@@ -1,0 +1,12 @@
+server {
+	listen 8081;
+	server_name _;
+
+	# Only Caddy (edge) may query the ask endpoint
+	allow 192.168.17.26;
+	deny all;
+
+	location / {
+		return 200;
+	}
+}

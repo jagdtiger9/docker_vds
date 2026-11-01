@@ -1,0 +1,29 @@
+# Dev edge: on-demand TLS from Caddy's internal CA.
+# One-time host setup: make cert.local.caddy.trust
+# NOTE: single-file bind mount — after editing this file on the host, restart
+# the container (docker compose restart caddy); a reload reads the stale mount.
+{
+	on_demand_tls {
+		ask http://proxy:8081/tls-check/{$ASK_TOKEN}
+	}
+	local_certs
+}
+
+https:// {
+	tls {
+		on_demand
+	}
+	# Existing per-host angie configs stay untouched: we talk to them over their
+	# own TLS (mkcert certs), skipping verification on the internal hop.
+	# The hop must be HTTP/1.1: angie selects the vhost by Host per request on
+	# HTTP/1.1, but on a multiplexed HTTP/2 connection the vhost is pinned to the
+	# connection's SNI — one shared h2 connection would serve the first host's
+	# vhost to every tenant.
+	reverse_proxy https://proxy:443 {
+		header_up Host {http.request.host}
+		transport http {
+			versions 1.1
+			tls_insecure_skip_verify
+		}
+	}
+}

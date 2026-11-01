@@ -1,0 +1,16 @@
+server {
+	listen 8081;
+	server_name _;
+
+	# Only Caddy (edge) may query the ask endpoint
+	allow 192.168.17.26;
+	deny all;
+
+	location / {
+		fastcgi_pass php_fpm;
+		include fastcgi_params;
+		fastcgi_param SCRIPT_FILENAME /var/www/[PROJECT]/public/index.php;
+		fastcgi_param SCRIPT_NAME /index.php;
+		fastcgi_param PATH_INFO "";
+	}
+}
