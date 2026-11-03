@@ -1,3 +1,7 @@
+# Copy to data/config/hosts/internal.ask.conf on the prod server (replaces the
+# dev stub that approves everything). Forwards the ask to the shop app's real
+# /tls-check/{token} route: only tenant subdomains and tenant custom domains
+# (users.domain) get 200, everything else 403 — no certs for strangers' domains.
 server {
 	listen 8081;
 	server_name _;
@@ -9,8 +13,11 @@ server {
 	location / {
 		fastcgi_pass php_fpm;
 		include fastcgi_params;
-		fastcgi_param SCRIPT_FILENAME /var/www/[PROJECT]/public/index.php;
+		fastcgi_param SCRIPT_FILENAME /var/www/shop/public/index.php;
 		fastcgi_param SCRIPT_NAME /index.php;
 		fastcgi_param PATH_INFO "";
+		# Any host the shop app vhost accepts; the route is path-matched and the
+		# token check is against the app's own ASK_TOKEN env.
+		fastcgi_param HTTP_HOST shop;
 	}
 }

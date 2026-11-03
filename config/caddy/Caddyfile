@@ -9,17 +9,36 @@
 	local_certs
 }
 
+# Fixed local projects — explicit blocks so their static vhosts on proxy:443
+# stay reachable through the edge. tls internal: dev CA certs, no ask gate.
+# The catch-all below routes everything else (shop tenants) to proxy:4443.
+albion.local, grafana.local, girls.local, magicpro.local {
+	tls internal
+	reverse_proxy https://proxy:443 {
+		header_up Host {http.request.host}
+		transport http {
+			versions 1.1
+			tls_insecure_skip_verify
+		}
+	}
+}
+
 https:// {
 	tls {
 		on_demand
 	}
-	# Existing per-host angie configs stay untouched: we talk to them over their
-	# own TLS (mkcert certs), skipping verification on the internal hop.
+	# Tenant traffic: *.shop.local subdomains and tenant custom domains
+	# (users.domain). Forwards to angie's shop catch-all on 4443, not 443:
+	# vhost selection on 443 is static (.shop.local), while tenant hosts are
+	# dynamic — the 4443 server serves the shop app for any Host and the app
+	# resolves the tenant itself. Unknown domains never get this far in prod
+	# (the ask endpoint denies their certs); on dev the ask stub approves
+	# everything, see data/config/hosts/internal.ask.conf.
 	# The hop must be HTTP/1.1: angie selects the vhost by Host per request on
 	# HTTP/1.1, but on a multiplexed HTTP/2 connection the vhost is pinned to the
 	# connection's SNI — one shared h2 connection would serve the first host's
 	# vhost to every tenant.
-	reverse_proxy https://proxy:443 {
+	reverse_proxy https://proxy:4443 {
 		header_up Host {http.request.host}
 		transport http {
 			versions 1.1

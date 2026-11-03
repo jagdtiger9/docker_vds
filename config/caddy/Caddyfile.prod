@@ -13,21 +13,47 @@
 # Each is routed by the same angie proxy (Host passthrough picks the vhost).
 # DNS must resolve to this server and port 80 must be reachable before rollout.
 some.domain.ru {
-	reverse_proxy https://proxy:443 {
-		header_up Host {http.request.host}
-		transport http {
-			versions 1.1
-			tls_insecure_skip_verify
+	@challenge {
+		protocol https
+		path /.well-known/acme-challenge/*
+	}
+	handle @challenge {
+		# certbot webroot: angie's :80 block serves the token from
+		# /var/www/certbot (its :443 block has no challenge location).
+		# https side only — Caddy's automatic :80 redirect runs before
+		# site routes, and LE follows the redirect anyway.
+		reverse_proxy http://proxy:80 {
+			header_up Host {http.request.host}
+		}
+	}
+	handle {
+		reverse_proxy https://proxy:443 {
+			header_up Host {http.request.host}
+			transport http {
+				versions 1.1
+				tls_insecure_skip_verify
+			}
 		}
 	}
 }
 
 other.domain.ru {
-	reverse_proxy https://proxy:443 {
-		header_up Host {http.request.host}
-		transport http {
-			versions 1.1
-			tls_insecure_skip_verify
+	@challenge {
+		protocol https
+		path /.well-known/acme-challenge/*
+	}
+	handle @challenge {
+		reverse_proxy http://proxy:80 {
+			header_up Host {http.request.host}
+		}
+	}
+	handle {
+		reverse_proxy https://proxy:443 {
+			header_up Host {http.request.host}
+			transport http {
+				versions 1.1
+				tls_insecure_skip_verify
+			}
 		}
 	}
 }
@@ -36,16 +62,35 @@ https:// {
 	tls {
 		on_demand
 	}
-	# Talk to proxy over its own TLS, not port 80: prod host configs redirect
-	# port 80 to https (a 301 loop through Caddy). As in dev, force HTTP/1.1 so
-	# angie picks the vhost per request by Host (on a multiplexed h2 connection
-	# the vhost is pinned per connection, serving one tenant to all), and skip
-	# verification on the internal hop (SNI is "proxy", not the tenant domain).
-	reverse_proxy https://proxy:443 {
-		header_up Host {http.request.host}
-		transport http {
-			versions 1.1
-			tls_insecure_skip_verify
+	@challenge {
+		protocol https
+		path /.well-known/acme-challenge/*
+	}
+	handle @challenge {
+		# certbot webroot: angie's :80 block serves the token from
+		# /var/www/certbot (its :443 block has no challenge location).
+		# Keeps legacy certbot renewals (WSS certs) working through Caddy.
+		reverse_proxy http://proxy:80 {
+			header_up Host {http.request.host}
+		}
+	}
+	handle {
+		# Tenant traffic (*.<shop suffix> and tenant custom domains, users.domain),
+		# approved by the ask endpoint above. Forwards to angie's shop catch-all on
+		# 4443, not 443: vhost selection on 443 is static, while tenant hosts are
+		# dynamic — the 4443 server serves the shop app for any Host and the app
+		# resolves the tenant itself. Talk to proxy over its own TLS, not port 80:
+		# prod host configs redirect port 80 to https (a 301 loop through Caddy).
+		# As in dev, force HTTP/1.1 so angie picks the vhost per request by Host
+		# (on a multiplexed h2 connection the vhost is pinned per connection,
+		# serving one tenant to all), and skip verification on the internal hop
+		# (SNI is "proxy", not the tenant domain).
+		reverse_proxy https://proxy:4443 {
+			header_up Host {http.request.host}
+			transport http {
+				versions 1.1
+				tls_insecure_skip_verify
+			}
 		}
 	}
 }
