@@ -12,7 +12,7 @@
 # Fixed local projects — explicit blocks so their static vhosts on proxy:443
 # stay reachable through the edge. tls internal: dev CA certs, no ask gate.
 # The catch-all below routes everything else (shop tenants) to proxy:4443.
-albion.local, grafana.local, girls.local, magicpro.local {
+grafana.local, magicpro.local {
 	tls internal
 	reverse_proxy https://proxy:443 {
 		header_up Host {http.request.host}
