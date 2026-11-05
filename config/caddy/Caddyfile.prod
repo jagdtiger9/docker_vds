@@ -27,7 +27,7 @@ some.domain.ru {
 		}
 	}
 	handle {
-		reverse_proxy https://proxy:443 {
+		reverse_proxy https://proxy:4443 {
 			header_up Host {http.request.host}
 			transport http {
 				versions 1.1

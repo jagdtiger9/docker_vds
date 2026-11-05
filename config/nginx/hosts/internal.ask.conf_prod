@@ -13,11 +13,11 @@ server {
 	location / {
 		fastcgi_pass php_fpm;
 		include fastcgi_params;
-		fastcgi_param SCRIPT_FILENAME /var/www/shop/public/index.php;
+		fastcgi_param SCRIPT_FILENAME /var/www/[PROJECT]/public/index.php;
 		fastcgi_param SCRIPT_NAME /index.php;
 		fastcgi_param PATH_INFO "";
 		# Any host the shop app vhost accepts; the route is path-matched and the
 		# token check is against the app's own ASK_TOKEN env.
-		fastcgi_param HTTP_HOST shop;
+		fastcgi_param HTTP_HOST [PROJECT];
 	}
 }

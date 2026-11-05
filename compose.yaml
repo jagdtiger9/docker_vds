@@ -279,7 +279,7 @@ services:
     pgadmin:
         image: dpage/pgadmin4
         container_name: pgadmin
-        profiles: [ pma ]
+        profiles: [ pma_pg ]
         volumes:
             # Именно этот путь нужно сохранять
             - pgadmin:/var/lib/pgadmin
