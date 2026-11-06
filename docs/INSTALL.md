@@ -149,6 +149,8 @@ mkdir -p [HOSTS_DATA]/example.com/public
 # 4. Reload and create certificate
 make nginx.reload
 make cert.create DOMAIN=example.com
+# or several domains (SANs) on one certificate:
+make cert.create DOMAIN="example.com www.example.com"
 
 # 5. Uncomment SSL lines in config and reload
 make nginx.reload

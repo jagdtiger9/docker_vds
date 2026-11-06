@@ -128,8 +128,8 @@ new.host.https: ## Create new HTTPS virtual host for a given host, [use: HOST]
 new.host: ## Create new HTTP virtual host for a given HOST
 	cp ./config/nginx/hosts/default.host.conf_http ${HOSTS_CONFIG}${HOST}.conf \
 	&& sed -i 's/\[DOMAIN_NAME\]/${HOST}/g' ${HOSTS_CONFIG}${HOST}.conf
-cert.create: ## Create SSL certificate for a given DOMAIN, [use: DOMAIN]
-	docker compose run --rm --entrypoint certbot certbot certonly --keep --webroot --webroot-path /var/www/certbot/ -d ${DOMAIN}
+cert.create: ## Create SSL certificate for one or more DOMAINs (space-separated), [use: DOMAIN="domain.com www.domain.com"]
+	docker compose run --rm --entrypoint certbot certbot certonly --keep --webroot --webroot-path /var/www/certbot/ $(addprefix -d ,${DOMAIN})
 cert.delete: ## Delete SSL certificate for a given DOMAIN, [use: DOMAIN]
 	docker compose run --rm --entrypoint certbot certbot delete --cert-name ${DOMAIN}
 # Задачка в крон для ежемесячной проверки-продления сертификатов
@@ -172,9 +172,12 @@ mysql.exec: ## Execute arbitrary SQL query in db service, [use: SQL]
 mysql.create: ## Create database, [use: DB]
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
 		-e "CREATE DATABASE ${DB} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql.create.user: ## Create database user, [use: DB, USER, PASSWORD]
+mysql.user.create: ## Create database user, [use: DB, USER, PASSWORD]
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
         -e "CREATE USER '${USER}'@'%' IDENTIFIED BY '${PASSWORD}'; GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'%'; FLUSH PRIVILEGES;"
+mysql.user.grant: ## Grant database permissions to user, [use: DB, USER, PASSWORD]
+	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
+        -e "GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'%'; FLUSH PRIVILEGES;"
 mysql.dump: ## Create database dump, [use: DB, FILE]
 	docker compose exec db mysqldump \
 		-u root -p${MYSQL_ROOT_PASSWORD} \
@@ -195,9 +198,12 @@ pg.cli: ## Open psql shell in pg service, [use: DB]
 	docker compose exec pg psql -U postgres -d ${DB}
 pg.create: ## Create database, [use: DB]
 	docker compose exec pg createdb -U postgres -E UTF8 ${DB}
-pg.create.user: ## Create database user and owner, [use: DB, USER, PASSWORD]
+pg.user.create: ## Create database user and owner, [use: DB, USER, PASSWORD]
 	docker compose exec pg psql -U postgres -c \
 		"CREATE USER ${USER} WITH PASSWORD '${PASSWORD}'; GRANT ALL PRIVILEGES ON DATABASE ${DB} TO ${USER}; ALTER DATABASE ${DB} OWNER TO ${USER};"
+pg.user.grant: ## Grant database permissions to user, [use: DB, USER, PASSWORD]
+	docker compose exec pg psql -U postgres -c \
+		"GRANT ALL PRIVILEGES ON DATABASE ${DB} TO ${USER}; ALTER DATABASE ${DB} OWNER TO ${USER};"
 pg.create.exporter: ## Create postgres_exporter user, [use: PASSWORD]
 	docker compose exec pg psql -U postgres -c \
 		"CREATE USER exporter WITH PASSWORD '${PASSWORD}'; GRANT pg_monitor TO exporter;"
