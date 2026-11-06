@@ -2,8 +2,8 @@
 # dump-project — DB dump + config backup for a single project.
 # Usage: dump-project <project-name>
 #
-# Sources /etc/cron/dump/<name>.env which must define:
-#   DB_NAME          Database name
+# Sources /etc/cron/projects/<name>.env which must define:
+#   DB_NAME          Database name or space-separated list (empty = config files only)
 #   DB_ENGINE        mysql (default) or pgsql
 #   RETENTION_DAYS   Delete dumps older than this
 #   CONFIG_PATHS     Space-separated paths relative to /var/www/<name>
@@ -28,18 +28,25 @@ BACKUP_DIR="/var/backup/${NAME}"
 DATE=$(date +%Y%m%d_%H%M)
 mkdir -p "$BACKUP_DIR"
 
-echo "[dump-project] ${DB_NAME} → ${BACKUP_DIR}"
-
-# DB dump
-if [ "${DB_ENGINE:-mysql}" = "pgsql" ]; then
-    PGPASSWORD="${POSTGRES_PASSWORD}" pg_dump -h pg -U "${POSTGRES_USER:-postgres}" \
-        --clean --if-exists --no-owner --no-privileges \
-        "$DB_NAME" | gzip > "${BACKUP_DIR}/db_${DATE}.sql.gz"
+# DB dump — one file per database; skipped when DB_NAME is empty
+if [ -n "${DB_NAME:-}" ]; then
+    echo "[dump-project] db: ${DB_NAME} → ${BACKUP_DIR}"
+    # shellcheck disable=SC2086  # intentional word splitting on the name list
+    for db in ${DB_NAME}; do
+        if [ "${DB_ENGINE:-mysql}" = "pgsql" ]; then
+            PGPASSWORD="${POSTGRES_PASSWORD}" pg_dump -h pg -U "${POSTGRES_USER:-postgres}" \
+                --clean --if-exists --no-owner --no-privileges \
+                "$db" | gzip > "${BACKUP_DIR}/db_${db}_${DATE}.sql.gz"
+        else
+            mariadb-dump -h db -u root -p"${MYSQL_ROOT_PASSWORD}" \
+                --ssl-verify-server-cert=0 \
+                --quote-names --single-transaction --no-tablespaces --extended-insert --add-drop-table \
+                "$db" | gzip > "${BACKUP_DIR}/db_${db}_${DATE}.sql.gz"
+        fi
+        echo "[dump-project] ${db} done ($(du -h "${BACKUP_DIR}/db_${db}_${DATE}.sql.gz" | cut -f1))"
+    done
 else
-    mariadb-dump -h db -u root -p"${MYSQL_ROOT_PASSWORD}" \
-        --ssl-verify-server-cert=0 \
-        --quote-names --single-transaction --no-tablespaces --extended-insert --add-drop-table \
-        "$DB_NAME" | gzip > "${BACKUP_DIR}/db_${DATE}.sql.gz"
+    echo "[dump-project] DB_NAME empty — config files only"
 fi
 
 # Config dump
@@ -49,4 +56,4 @@ tar czf "${BACKUP_DIR}/config_${DATE}.tar.gz" -C "$DATA_DIR" $CONFIG_PATHS
 # Rotate
 find "$BACKUP_DIR" -mtime "+${RETENTION_DAYS}" -delete
 
-echo "[dump-project] ${DB_NAME} done ($(du -h "${BACKUP_DIR}/db_${DATE}.sql.gz" | cut -f1))"
+echo "[dump-project] ${NAME} done"

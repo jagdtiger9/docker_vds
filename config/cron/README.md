@@ -37,7 +37,7 @@ CONFIG_PATHS=".env ./config/"
 
 | Key              | Description                                                                                  |
 |------------------|----------------------------------------------------------------------------------------------|
-| `DB_NAME`        | Database name to dump                                                                        |
+| `DB_NAME`        | Database name or space-separated list to dump; empty = config files only                     |
 | `DB_ENGINE`      | `mysql` (default) or `pgsql` — which server to dump from (`db` vs `pg`)                      |
 | `RETENTION_DAYS` | Delete backups older than N days                                                             |
 | `CONFIG_PATHS`   | Space-separated paths relative to `/var/www/<project-name>`, archived into `config_*.tar.gz` |

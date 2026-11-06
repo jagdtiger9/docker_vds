@@ -175,7 +175,7 @@ mysql.create: ## Create database, [use: DB]
 mysql.user.create: ## Create database user, [use: DB, USER, PASSWORD]
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
         -e "CREATE USER '${USER}'@'%' IDENTIFIED BY '${PASSWORD}'; GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'%'; FLUSH PRIVILEGES;"
-mysql.user.grant: ## Grant database permissions to user, [use: DB, USER, PASSWORD]
+mysql.user.grant: ## Grant database permissions to user, [use: DB, USER]
 	docker compose exec db mysql -u root -p"${MYSQL_ROOT_PASSWORD}" \
         -e "GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'%'; FLUSH PRIVILEGES;"
 mysql.dump: ## Create database dump, [use: DB, FILE]
@@ -201,7 +201,7 @@ pg.create: ## Create database, [use: DB]
 pg.user.create: ## Create database user and owner, [use: DB, USER, PASSWORD]
 	docker compose exec pg psql -U postgres -c \
 		"CREATE USER ${USER} WITH PASSWORD '${PASSWORD}'; GRANT ALL PRIVILEGES ON DATABASE ${DB} TO ${USER}; ALTER DATABASE ${DB} OWNER TO ${USER};"
-pg.user.grant: ## Grant database permissions to user, [use: DB, USER, PASSWORD]
+pg.user.grant: ## Grant database permissions to user, [use: DB, USER]
 	docker compose exec pg psql -U postgres -c \
 		"GRANT ALL PRIVILEGES ON DATABASE ${DB} TO ${USER}; ALTER DATABASE ${DB} OWNER TO ${USER};"
 pg.create.exporter: ## Create postgres_exporter user, [use: PASSWORD]
