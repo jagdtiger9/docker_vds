@@ -1,3 +1,4 @@
+PROJECT=magicpro
 DB_NAME=magicpro
 DB_ENGINE=mysql
 RETENTION_DAYS=7
