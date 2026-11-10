@@ -167,6 +167,14 @@ make pg.create.exporter PASSWORD=<PG_EXPORTER_PASSWORD>
 
 ### Медленные запросы Postgres
 
+`shared_preload_libraries` загружает библиотеку на уровне кластера (после изменения
+конфига нужен рестарт `pg`), но extension создаётся в каждой БД отдельно. Для
+экспортёра, который подключается к `shop`:
+
+```
+make pg.statements DB=shop
+```
+
 Ручные запросы к `pg_stat_statements` и лог медленных запросов — см.
 [docs/postgres-slow-queries.md](docs/postgres-slow-queries.md). Grafana
 управляется через веб-интерфейс http://grafana/ (датасорс и дашборды хранятся

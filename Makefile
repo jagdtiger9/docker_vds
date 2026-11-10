@@ -198,6 +198,11 @@ pg.cli: ## Open psql shell in pg service, [use: DB]
 	docker compose exec pg psql -U postgres -d ${DB}
 pg.create: ## Create database, [use: DB]
 	docker compose exec pg createdb -U postgres -E UTF8 ${DB}
+# pg_stat_statements is per-database: shared_preload_libraries only loads the library,
+# the view/functions must be created in each DB that queries them (postgres_exporter -> shop).
+pg.statements: ## Create pg_stat_statements extension, [use: DB]
+	docker compose exec pg psql -U postgres -d ${DB} -c \
+		"CREATE EXTENSION IF NOT EXISTS pg_stat_statements;"
 pg.user.create: ## Create database user and owner, [use: DB, USER, PASSWORD]
 	docker compose exec pg psql -U postgres -c \
 		"CREATE USER ${USER} WITH PASSWORD '${PASSWORD}'; GRANT ALL PRIVILEGES ON DATABASE ${DB} TO ${USER}; ALTER DATABASE ${DB} OWNER TO ${USER};"
