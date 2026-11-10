@@ -98,7 +98,18 @@ services:
         profiles: [ metrics ]
         environment:
             # Dedicated user created via: make pg.create.exporter PASSWORD=...
-            DATA_SOURCE_NAME: postgresql://exporter:${PG_EXPORTER_PASSWORD}@pg:5432/postgres?sslmode=disable
+            # Per-database collectors (statements, user tables) only query this DB.
+            # Full DSN: DATA_SOURCE_URI/USER/PASS are deprecated by upstream (removed in v0.22.0).
+            DATA_SOURCE_NAME: postgresql://exporter:${PG_EXPORTER_PASSWORD}@pg:5432/shop?sslmode=disable
+        # Top-100 statements by total time; query text is exported as the
+        # pg_stat_statements_query_id{queryid,query} mapping for Grafana tables.
+        command:
+            - '--collector.stat_statements'
+            - '--collector.stat_statements.include_query'
+            - '--collector.stat_statements.limit=100'
+            - '--collector.stat_statements.query_length=300'
+            # Per-table seq/index scans, dead tuples, autovacuum/autoanalyze counts
+            - '--collector.stat_user_tables'
         expose:
             - 9187
         networks:

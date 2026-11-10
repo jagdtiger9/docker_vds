@@ -150,6 +150,7 @@ Grafana dashboards:
 - 20719 (Angie)
 - 14900 (Nginx)
 - 13500 (Clickhouse) https://grafana.com/grafana/dashboards/13500-clickhouse-internal-exporter/
+- 24919 "PostgreSQL monitoring dashboard" (http://grafana/d/pg_exporter_monitoring/postgresql-monitoring-dashboard)
 
 ### mysql-exporter database user
 
@@ -163,3 +164,10 @@ GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'exporter'@'%';
 ```
 make pg.create.exporter PASSWORD=<PG_EXPORTER_PASSWORD>
 ```
+
+### Медленные запросы Postgres
+
+Ручные запросы к `pg_stat_statements` и лог медленных запросов — см.
+[docs/postgres-slow-queries.md](docs/postgres-slow-queries.md). Grafana
+управляется через веб-интерфейс http://grafana/ (датасорс и дашборды хранятся
+в `${DATA_GRAFANA}`).
